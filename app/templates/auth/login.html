@@ -1,0 +1,31 @@
+{% extends "base.html" %}
+{% block title %}Log in{% endblock %}
+{% block content %}
+  <div class="h-100 row align-items-center justify-content-center">
+    <div class="col-12 col-lg-8">
+      <div class="text-center">
+        <h2 class="p-3 m-0">Login</h2>
+      </div>
+      <div class="container">
+        <form action="{{ url_for('login') }}" method="post">
+          <div class="mb-3">
+            <label for="username" class="form-label">Username</label>
+            <input type="text" class="form-control{% if username_invalid %} is-invalid{% endif %}" id="username" name="username" placeholder="Enter your username..." maxlength=20 value="{{ session['username'] }}" required>
+            <div class="invalid-feedback">Can't find your account</div>
+          </div>
+          <div class="mb-3">
+            <label for="password" class="form-label">Password</label>
+            <input type="password" class="form-control{% if password_invalid %} is-invalid{% endif %}" id="password" name="password" placeholder="Enter your password..." required>
+            <div class="invalid-feedback">Incorrect username or password</div>
+          </div>
+          <div class="text-end">
+            <button type="submit" class="btn btn-primary">Login</button>
+          </div>
+        </form>
+      </div>
+      <div class="text-end">
+        <div class="p-2">Don't have an account? <a href="{{ url_for('register') }}">Register</a></div>
+      </div>
+    </div>
+  </div>
+{% endblock %}

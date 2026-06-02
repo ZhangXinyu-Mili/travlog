@@ -1,0 +1,76 @@
+{% extends "base.html" %}
+{% block title %}Community Users{% endblock %}
+{% block content %}
+
+<!-- display users -->
+<div class="container mt-4">
+    <div class="d-flex align-items-center">
+        <h2 class="me-2">Community Users</h2>
+    </div>
+    <div class="pt-3">
+        {% if users %}
+        <form action="{{ url_for('community_users') }}" method="get">
+            <div class="d-flex mb-3">
+            <input type="text" class="form-control me-2" placeholder="Search users..." name="q" value="{{ request.args.get('q', '') }}">
+            <button class="btn btn-primary" type="submit" id="search">Search</button>
+            </div>
+        </form>
+    <div class="row row-cols-1 row-cols-sm-2 row-cols-md-3 row-cols-lg-4 g-4 pt-3">
+        {% for user in users %}
+        <div class="col">
+            <div class="card h-100 d-flex flex-column justify-content-center">
+                <img class="rounded card-img-top" width="100" src="{{ user_profile_image(user) }}" />
+                <h4 class="card-title text-center">
+                  <a href="{{ url_for('view_profile', user_id=user.user_id) }}"><span>{{ user.username }}{{ user_level(user.user_id) }}</span></a>
+                </h4>
+                <div class="d-flex justify-content-center">
+                    {% if user_or_location_followed(session['user_id'], user.user_id, 'user') %}
+                        <button disabled class="btn btn-secondary btn-sm">Followed</button>
+                    {% elif session['user_id'] != user.user_id %}
+                        <button data-follow-btn="{{url_for('follow_user', user_id=user.user_id)}}" class="btn btn-primary btn-sm">Follow</button>
+                    {% endif %}
+                </div>
+                <div class="card-body card-text justify-content-center text-center">
+                    <p class="text-muted"><small>Location: {{ user.location }}</small></p>
+                    <p class="card-text">{{ user.description }}</p>
+                    <div class="justify-content-center text-center"><span class="badge text-bg-{{role_badges_mapping[user.role]}} justify-content-end">{{ user.role }}</span></div>
+
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+</div>
+
+
+    <nav class="mt-4">
+        <ul class="pagination justify-content-center">
+            {% if current_page > 1 %}
+            <li class="page-item">
+                <a class="page-link" href="?page={{ current_page - 1 }}&q={{ request.args.get('q', '') }}" aria-label="Previous">
+                    <span aria-hidden="true">&laquo;</span>
+                </a>
+            </li>
+            {% endif %}
+            {% for page in range(1, total_pages + 1) %}
+            <li class="page-item {% if page == current_page %}active{% endif %}">
+                <a class="page-link" href="?current_page={{ page }}&q={{ request.args.get('q', '') }}">{{ page }}</a>
+            </li>
+            {% endfor %}
+            {% if current_page < total_pages %}
+                <li class="page-item">
+                    <a class="page-link" href="?current_page={{ current_page + 1 }}&q={{ request.args.get('q', '') }}" aria-label="Next">
+                        <span aria-hidden="true">&raquo;</span>
+                    </a>
+                </li>
+            {% endif %}
+        </ul>
+    </nav>
+    {% else %}
+        <p class="text-center">No user found.</p>
+    {% endif %}
+
+</div>
+</div>
+{% endblock %}
+
+

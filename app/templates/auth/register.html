@@ -1,0 +1,62 @@
+{% extends "base.html" %}
+{% block title %}Register{% endblock %}
+{% block content %}
+  <div class="h-100 row align-items-center justify-content-center">
+    <div class="col-12 col-lg-8">
+      <div class="text-center">
+        <h2 class="p-3 m-0">Register</h2>
+      </div>
+      <div class="container">
+        <form action="{{ url_for('register') }}" method="post">
+          <div class="row">
+            <div class="mb-3 col-lg col-12">
+              <label for="username" class="form-label">Username</label>
+              <input type="text" class="form-control{% if err_msgs['username'] %} is-invalid{% endif %}" id="username" name="username" placeholder="Enter your username..." value="{{ form['username'] }}" required>
+              <div class="invalid-feedback">{{ err_msgs['username'] }}</div>
+            </div>
+            <div class="mb-3 col-lg col-12">
+              <label for="email" class="form-label">Email</label>
+              <input type="email" class="form-control{% if err_msgs['email'] %} is-invalid{% endif %}" id="email" name="email" placeholder="Enter your email..." value="{{ form['email'] }}">
+              <div class="invalid-feedback">{{ err_msgs['email'] }}</div>
+            </div>
+          </div>
+          <div class="row">
+            <div class="mb-3 col-lg col-12">
+              <label for="password" class="form-label">Password</label>
+              <input type="password" class="form-control{% if err_msgs['password'] %} is-invalid{% endif %}" id="password" name="password" placeholder="Enter your password..." required>
+              <div class="invalid-feedback">{{ err_msgs['password'] }}</div>
+            </div>
+            <div class="mb-3 col-lg col-12">
+              <label for="password_confirmation" class="form-label">Password Confirmation</label>
+              <input type="password" class="form-control{% if err_msgs['password_confirmation'] %} is-invalid{% endif %}" id="password_confirmation" name="password_confirmation" placeholder="Confirm your password..." required>
+              <div class="invalid-feedback">{{ err_msgs['password_confirmation'] }}</div>
+            </div>
+          </div>
+          <div class="row">
+            <div class="mb-3 col-lg col-12">
+              <label for="first_name" class="form-label">First Name</label>
+              <input type="text" class="form-control{% if err_msgs['first_name'] %} is-invalid{% endif %}" id="first_name" name="first_name" placeholder="Enter your first name..." value="{{ form['first_name'] }}">
+              <div class="invalid-feedback">{{ err_msgs['first_name'] }}</div>
+            </div>
+            <div class="mb-3 col-lg col-12">
+              <label for="last_name" class="form-label">Last Name</label>
+              <input type="text" class="form-control{% if err_msgs['last_name'] %} is-invalid{% endif %}" id="last_name" name="last_name" placeholder="Enter your last name..." value="{{ form['last_name'] }}">
+              <div class="invalid-feedback">{{ err_msgs['last_name'] }}</div>
+            </div>
+          </div>
+          <div class="mb-3">
+            <label for="location" class="form-label">Location</label>
+            <input type="text" class="form-control{% if err_msgs['location'] %} is-invalid{% endif %}" id="location" name="location" placeholder="Enter your location..." value="{{ form['location'] }}">
+            <div class="invalid-feedback">{{ err_msgs['location'] }}</div>
+          </div>
+          <div class="text-end">
+            <button type="submit" class="btn btn-primary">Register</button>
+          </div>
+        </form>
+      </div>
+      <div class="text-end">
+        <div class="p-2">Already have account? <a href="{{ url_for('login') }}">Login</a></div>
+      </div>
+    </div>
+  </div>
+{% endblock %}

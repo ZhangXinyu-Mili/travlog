@@ -1,0 +1,66 @@
+{% extends "base.html" %}
+{% block title %}Editor and Admin update event{% endblock %}
+{% block content %}
+<div class="container mt-4">
+    <div class="d-flex align-items-center">
+        <h2 class="me-2">Edit Event</h2>
+        <span> - by editors and admins</span>
+    </div>
+    
+    <form method="post" class="form needs-validation" novalidate>
+        <div class="row row-cols-1 pt-3 g-4">
+            <div class="col">
+                <label for="title" class="form-label">Title</label>
+                <input type="text" id="title" name="title" class="form-control{% if title_error %} is-invalid{% endif %}" value="{{ event.title }}" required>
+            </div>
+            <div class="invalid-feedback">{{ title_error }}</div>
+            
+            <div class="col">
+                <label for="description" class="form-label">Description</label>
+                <textarea id="description" name="description" class="form-control{% if description_error %} is-invalid{% endif %}" rows="5"
+                    required>{{ event.description }}</textarea>
+                <div class="invalid-feedback">{{ description_error }}</div>
+            </div>
+            <div class="col">
+                <label for="event-location" class="form-label">Location</label>
+                <input type="text" name="event-location" id="event-location" class="form-control{% if location_error %} is-invalid{% endif %}" maxlength=255 value="{{event.location_name if event.location_name else "" }}">
+                {% if my_locations or other_locations %}
+                <select class="form-select" id="users-location" onchange="get_location_value(this)">
+                    {% if my_locations %}
+                    <option value="" selected disabled >Traveller's Previous locations</div>
+                    {% for item in my_locations %}
+                    <option value="{{item['location_name']}}">{{item['location_name']}}</option>
+                    {% endfor %}
+                    {% endif %}
+    
+                    {% if other_locations %}
+                    <option value="" disabled>Other travellers'</div>
+                    {% for item in other_locations %}
+                    <option value="{{item['location_name']}}">{{item['location_name']}}</option>
+                    {% endfor %}
+                    {% endif %}
+                </select>
+                {% endif %}
+                <div class="invalid-feedback">{{ location_error }}</div>
+            </div>
+
+            <div class="form-actions pt-3 text-end">
+                <button href="{{ url_for('update_public_event', journey_id=journey_id, event_id=event.event_id)}}" class="btn btn-primary">Submit</button>
+                <a href="{{ url_for('journey', journey_id=journey_id) }}" class="btn btn-primary">Cancel</a>
+            </div>
+        </form>
+    </div>
+</div>
+<script>
+  
+    function get_location_value (element) {  
+        const location_input = document.getElementById('event-location');
+        for (const child of element.children) {
+            if (child.selected) {
+              location_input.value = child.value;
+            }
+        }
+        element.children[0].selected = true;
+    }
+  </script>
+{% endblock %}

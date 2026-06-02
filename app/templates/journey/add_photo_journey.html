@@ -1,0 +1,38 @@
+<div class="modal-dialog">
+    <form action="{{url_for('add_photo_to_journey', journey_id=journey_id)}}" method="POST" enctype="multipart/form-data">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Add Journey Photo</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div>
+                    {% if journey.photo %}
+                    <img src="{{ url_for('static', filename='uploads/' + journey.photo) }}" class="card-img-top img-fluid object-fit-cover mb-2" style="max-height: 200px; width: 100%;" alt="{{ journey.title }}">
+                    <br/>
+                    <label for="journey-title" class="form-label">Submit a photo to replace current one.</label>
+                    {% else %}
+                    <label for="journey-title" class="form-label">Only one photo can be submitted to an journey.</label>
+                    {% endif %}
+                    <input type="file" accept=".png, .jpg, .jpeg, .gif" id="journey-photo" name="journey_photo" class="form-control{% if photo_error %} is-invalid{% endif %}" required>
+                    <div class="invalid-feedback">{{ photo_error }}</div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <div class="btn-group" role="group">
+                    {% if journey.photo %}
+                    <button id="btnGroupDrop1" type="button" class="btn btn-danger dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
+                        Remove photo
+                    </button>
+                    {% endif %}
+                    <ul class="dropdown-menu" aria-labelledby="btnGroupDrop1">
+                      <li><a journey_id="{{journey_id}}" class="btn btn-danger" role="button" onclick="removePhoto(this)">Confirm to remove</a></li>
+                    </ul>
+                </div>
+                <button type="submit" class="btn btn-primary">Submit</button>
+                <a data-bs-dismiss="modal" class="btn btn-primary">Cancel</a>
+            </div>
+        </div>
+    </form>
+</div>
+

@@ -1,0 +1,408 @@
+{% extends "base.html" %}
+{% block title %}My Profile{% endblock %}
+{% block content %}
+<!--div class="h-100 row align-items-center justify-content-center"-->
+<div class="h-100 row align-items-center justify-content-center carousel slide">
+  <div class="col-12 col-lg-8">
+    <div class="text-start navbar">
+      <!--h2 class="p-3 m-0">My Profile</h2-->
+      <ul class="nav nav-underline">
+          <li>
+            <a role="button" class="p-3 m-0 h4 nav-link active" data-bs-toggle="tab" onclick="set_active('slide1', this)">My Profile</a>
+          </li>
+          <li>
+            <a role="button" class="p-3 m-0 h4 nav-link" data-bs-toggle="tab" onclick="set_active('slide2', this)">Subscription</a>
+          </li>
+      </ul>
+    </div>
+    <!--div class="container" -->
+    <div id="slide1" class="container carousel-item active">
+      <div class="row align-items-center">
+
+        <div class="col-md-4 text-center">
+          <img src="{{ user_profile_image(user) }}" alt="Profile Image" class="img-fluid rounded" style="max-width: 150px;">
+        </div>
+
+        <div class="col-md-8">
+          <h4>{{ user.username }} <small class="text-body-secondary">{{user_level(user.user_id)}}</small></h4>
+          <p>{{ user.first_name }} {{ user.last_name }}</p>
+          <p><i class="bi bi-envelope"></i> {{ user.email }}</p>
+          <p><i class="bi bi-geo-alt"></i> {{ user.location }}</p>
+          <div class="d-flex justify-content-start gap-2">
+            <span class="badge text-bg-{{role_badges_mapping[user.role]}}">{{ user.role }}</span>
+            <span class="badge text-bg-{{status_badges_mapping[user.status]}}">{{ user.status }}</span>
+          </div>
+        </div>
+      </div>
+      <hr>
+      <div class="row">
+        <strong>Bio:</strong>
+        <p>{{ user.description }}</p>
+        {% if locations %}
+        <strong>Places I've Been:</strong>
+        <p>{% for location in locations %}
+        <span class="badge text-bg-primary">{{ location.location_name }}</span>
+        {% endfor %}
+        </p>
+        {% endif %}
+      </div>
+      <hr>
+
+      <!-- Achievements -->
+      <div>
+        <div class="mb-2">
+          <strong class="me-2">Level:</strong>
+          <i
+            class="bi bi-question-circle-fill"
+            data-bs-toggle="modal"
+            data-bs-target="#ruleModal"
+          ></i>
+        </div>
+        <div class="mb-4">
+          <div class="mb-2">Your current level: {{user_level(user.user_id, True)}}</div>
+        </div>
+
+        <div class="mb-2 d-flex justify-content-between">
+          <strong>Achievements:</strong>
+        </div>
+        {% for achievement in achievements %}
+        {% set progress = ((achievement.progress or 0) / achievement.goal) * 100 %}
+        {% set start_point = 0 %}
+        {% if achievement.type == "40_event_likes" %}
+          {% set progress = (((achievement.progress and achievement.progress-20) or 0) / (achievement.goal-20)) * 100 %}
+          {% set start_point = 20 %}
+        {% elif achievement.type == "60_event_likes" %}
+          {% set progress = (((achievement.progress and achievement.progress-40) or 0) / (achievement.goal-40)) * 100 %}
+          {% set start_point = 40 %}
+        {% endif %}
+        <div class="row">
+            {% if achievement.achieve_progress > 0 %}
+            <p class="col">
+            {% else %}
+            <p class="col text-secondary text-opacity-75">
+            {% endif %}
+              {% if achievement.achieved %}
+              <i class="bi bi-award-fill"></i>
+              {% else %}
+              <i class="bi bi-award"></i>
+              {% endif %}
+              {{ achievement.description }}
+            </p>
+            <div class="col">
+                <div class="progress" role="progressbar" aria-valuenow="{{progress | int}}" aria-valuemin="0" aria-valuemax="100">
+                  <div class="progress-bar" style="width: {{ progress }}%">{{achievement.progress or 0}} / {{ achievement.goal }}</div>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+      </div>
+
+      <hr>
+ <!--tabs -->
+      <ul class="nav nav-tabs text-center" id="profileTabs" role="tablist">
+          <li class="nav-item" role="presentation">
+              <button class="nav-link active" id="journeys-tab" data-bs-toggle="tab" data-bs-target="#journeys" type="button" role="tab">Journeys</button>
+          </li>
+          <li class="nav-item" role="presentation">
+              <button class="nav-link" id="likes-tab" data-bs-toggle="tab" data-bs-target="#likes" type="button" role="tab">Likes</button>
+          </li>
+          <li class="nav-item" role="presentation">
+              <button class="nav-link" id="comments-tab" data-bs-toggle="tab" data-bs-target="#comments" type="button" role="tab">Comments</button>
+          </li>
+      </ul>
+
+    <div class="tab-content p-3 border border-top-0" id="profileTabsContent">
+    <!--journey tab -->
+    <div class="tab-pane fade show active" id="journeys" role="tabpanel">
+        {% if journeys %}
+        <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4">
+            {% for journey in journeys %}
+            <div class="col">
+                <div class="card h-100 d-flex flex-column">
+                    <h4 class="card-title card-header">
+                        <a href="/journeys/{{ journey.journey_id }}">
+                            {{ journey.title }}
+                        </a>
+                    </h4>
+                    <div class="card-body flex-grow-1">
+                        <p class="text-muted"><i class="bi bi-calendar-check"></i> <small>{{ journey.start_date.strftime('%d/%m/%Y') }}</small></p>
+                        <p class="card-text">{{ journey.description }}</p>
+                    </div>
+                    <div class="d-flex justify-content-between p-3">
+                        <span class="badge bg-{{ status_badges_mapping[journey.status] }}">{{ journey.status.capitalize() }}</span>
+                    </div>
+                    {% if journey.photo %}
+                    <img src="{{ url_for('static', filename='uploads/' + journey.photo) }}" class="card-img-bottom" alt="journey cover image" />
+                    {% endif %}
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        <!--journey pagination -->
+        <nav class="mt-4">
+            <ul class="pagination justify-content-center">
+                {% if journeys_page > 1 %}
+                <li class="page-item">
+                    <a class="page-link" href="?journeys_page={{ journeys_page - 1 }}" aria-label="Previous">
+                        <span aria-hidden="true">&laquo;</span>
+                    </a>
+                </li>
+                {% endif %}
+                {% for page in range(1, total_journeys_pages + 1) %}
+                <li class="page-item {% if page == journeys_page %}active{% endif %}">
+                    <a class="page-link" href="?journeys_page={{ page }}">{{ page }}</a>
+                </li>
+                {% endfor %}
+                {% if journeys_page < total_journeys_pages %} <li class="page-item">
+                    <a class="page-link" href="?journeys_page={{ journeys_page + 1 }}" aria-label="Next">
+                        <span aria-hidden="true">&raquo;</span>
+                    </a>
+                    </li>
+                    {% endif %}
+            </ul>
+        </nav>
+        {% else %}
+        <p>No journeys available.</p>
+        {% endif %}
+    </div>
+
+    <!--like tab -->
+    <div class="tab-pane fade" id="likes" role="tabpanel">
+        {% if likes %}
+          <ul class="list-group">
+            {% for like in likes %}
+            <li class="list-group-item text-blue">
+                <div class="d-flex justify-content-between">
+                  <p>
+                      <i class="bi bi-person"></i>{{ like.username }}
+                      <small class="text-muted">
+                          <i class="bi bi-clock"></i> {{ like.created_at.strftime("%d/%m/%Y %H:%M:%S") }}
+                      </small>
+                  </p>
+                </div>
+                  <p>liked this event</p>
+              <div class="card shadow-lg mb-4 card-text">
+                  <div >
+                      <h5 class="card-title card-header">
+                        <a href="{{ url_for('show_event', event_id=like.event_id) }}">
+                          {{ like.title }}</a>
+                      </h5>
+                  </div>
+                  <div class="card-body">
+                      <p class="card-text">{{ like.description }}</p>
+                      {% if like.location_name %}
+                      <p style="min-height: 30px;">
+                          <i class="bi bi-geo-alt"></i>
+                          {{ like.location_name }}
+                      </p>
+                      {% endif %}
+                      <p>
+                        {% if like.start_datetime %}
+                          <i class="bi bi-calendar-check"></i> <strong>Start:</strong> {{ like.start_datetime.strftime("%d/%m/%Y %H:%M:%S") }} <br>
+                        {% endif %}
+                        {% if like.end_datetime %}
+                          <i class="bi bi-calendar-x"></i> <strong>End:</strong> {{ like.end_datetime.strftime("%d/%m/%Y %H:%M:%S") }}
+                        {% endif %}
+                      </p>
+                  </div>
+              </div>
+            </li>
+            {% endfor %}
+          </ul>
+          <!--like pagination -->
+          <nav class="mt-4">
+            <ul class="pagination justify-content-center">
+              {% if likes_page > 1 %}
+              <li class="page-item">
+                <a class="page-link" href="?likes_page={{ likes_page - 1 }}" aria-label="Previous">
+                  <span aria-hidden="true">&laquo;</span>
+                </a>
+              </li>
+              {% endif %}
+              {% for page in range(1, total_likes_pages + 1) %}
+              <li class="page-item {% if page == likes_page %}active{% endif %}">
+                <a class="page-link" href="?likes_page={{ page }}">{{ page }}</a>
+              </li>
+              {% endfor %}
+              {% if likes_page < total_likes_pages %}
+              <li class="page-item">
+                <a class="page-link" href="?likes_page={{ likes_page + 1 }}" aria-label="Next">
+                  <span aria-hidden="true">&raquo;</span>
+                </a>
+              </li>
+              {% endif %}
+            </ul>
+          </nav>
+          {% else %}
+            <p>No recent likes.</p>
+          {% endif %}
+    </div>
+    <!--comment tab -->
+    <div class="tab-pane fade" id="comments" role="tabpanel">
+        {% if comments %}
+          <ul class="list-group">
+            {% for comment in comments %}
+            <li class="list-group-item text-blue">
+                <div class="d-flex justify-content-between ">
+                  <p>
+                      <i class="bi bi-person"></i>{{ comment.username }}
+                      <small class="text-muted">
+                          <i class="bi bi-clock"></i> {{ comment.created_at.strftime("%d/%m/%Y %H:%M:%S") }}
+                      </small>
+                  </p>
+                </div>
+                {% if comment.is_hidden %}
+                  <p><i>This comment has been removed by moderation.</i></p>
+                {% else %}
+                  <p>{{ comment.content }}</p>
+                {% endif %}
+
+              <div class="card shadow-lg mb-4 card-text">
+                  <div >
+                      <h5 class="card-title card-header">
+                        <a href="{{ url_for('show_event', event_id=comment.event_id) }}">
+                          {{ comment.title }}</a>
+                      </h5>
+                  </div>
+                  <div class="card-body">
+                      <p class="card-text">{{ comment.description }}</p>
+                      {% if comment.location_name %}
+                      <p style="min-height: 30px;">
+                          <i class="bi bi-geo-alt"></i>
+                          {{ comment.location_name }}
+                      </p>
+                      {% endif %}
+                      <p>
+                          {% if comment.start_datetime %}
+                            <i class="bi bi-calendar-check"></i> <strong>Start:</strong> {{ comment.start_datetime.strftime("%d/%m/%Y %H:%M:%S") }} <br>
+                          {% endif %}
+                          {% if comment.end_datetime %}
+                            <i class="bi bi-calendar-x"></i> <strong>End:</strong> {{ comment.end_datetime.strftime("%d/%m/%Y %H:%M:%S") }}
+                          {% endif %}
+                      </p>
+                  </div>
+              </div>
+            </li>
+            {% endfor %}
+          </ul>
+          <!--comment pagination -->
+          <nav class="mt-4">
+            <ul class="pagination justify-content-center">
+              {% if comments_page > 1 %}
+              <li class="page-item">
+                <a class="page-link" href="?comments_page={{ comments_page - 1 }}" aria-label="Previous">
+                  <span aria-hidden="true">&laquo;</span>
+                </a>
+              </li>
+              {% endif %}
+              {% for page in range(1, total_comments_pages + 1) %}
+              <li class="page-item {% if page == comments_page %}active{% endif %}">
+                <a class="page-link" href="?comments_page={{ page }}">{{ page }}</a>
+              </li>
+              {% endfor %}
+              {% if comments_page < total_comments_pages %}
+              <li class="page-item">
+                <a class="page-link" href="?comments_page={{ comments_page + 1 }}" aria-label="Next">
+                  <span aria-hidden="true">&raquo;</span>
+                </a>
+              </li>
+              {% endif %}
+            </ul>
+          </nav>
+          {% else %}
+            <p>No recent comments.</p>
+          {% endif %}
+    </div>
+
+
+
+    </div>
+
+      <div class="d-flex flex-column flex-md-row gap-2 justify-content-md-end text-end">
+        <a href="{{ url_for('edit_profile_form')}}" class="btn btn-primary w-30 w-md-auto">Edit Profile</a>
+        <a href="/my_profile/reset_password" class="btn btn-primary w-30 w-md-auto">Reset Password</a>
+      </div>
+    </div>
+    <div id="slide2" class="container carousel-item">
+    </div>
+  </div>
+</div>
+
+<div class="modal fade" id="ruleModal" tabindex="-1" aria-labelledby="ruleModalLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h1 class="modal-title fs-5" id="ruleModalLabel">Points and Levels System</h1>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <strong class="text-success">How Points Work</strong>
+        <p>Each achievement you complete earns you <mark>10 points</mark>. As you accumulate points, you'll automatically advance through different tier levels, unlocking new recognition.</p>
+
+        <p><strong class="text-success">Advancement Levels</strong></p>
+        <div class="ms-1 mb-1 px-1 py-2 d-flex align-items-center text-bg-light border-start border-primary-subtle border-4 rounded">
+          <span class="me-2">🥉</span>
+          <div>
+            <div><strong>Bronze Tier</strong></div>
+            <div><small class="text-secondary">Unlocked at 10+ points (1+ achievements)</small></div>
+          </div>
+        </div>
+        <div class="ms-1 mb-1 px-1 py-2 d-flex align-items-center text-bg-light border-start border-primary-subtle border-4 rounded">
+          <span class="me-2">🥈</span>
+          <div>
+            <div><strong>Silver Tier</strong></div>
+            <div><small class="text-secondary">Unlocked at 30+ points (3+ achievements)</small></div>
+          </div>
+        </div>
+        <div class="ms-1 mb-1 px-1 py-2 d-flex align-items-center text-bg-light border-start border-primary-subtle border-4 rounded">
+          <span class="me-2">🥇</span>
+          <div>
+            <div><strong>Gold Tier</strong></div>
+            <div><small class="text-secondary">Unlocked at 50+ points (5+ achievements)</small></div>
+          </div>
+        </div>
+        <div class="ms-1 mb-1 px-1 py-2 d-flex align-items-center text-bg-light border-start border-primary-subtle border-4 rounded">
+          <span class="me-2">💎</span>
+          <div>
+            <div><strong>Diamond Tier</strong></div>
+            <div><small class="text-secondary">Unlocked at 100+ points (10+ achievements)</small></div>
+          </div>
+        </div>
+
+        <p class="mt-2"><strong>Note:</strong> Your tier level is determined by your total accumulated points. Once you reach a tier, you maintain that status as you continue earning more achievements.</p>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+
+  async function set_active(id, a) {
+    const elements = document.getElementsByClassName("carousel-item");
+    const element2 = document.getElementById(id);
+    for (const element of elements) {
+        element.classList.remove("active");
+    }
+    element2.classList.add("active");
+    if (id=="slide2") {
+      try {
+              const response = await fetch(('{{url_for("my_subscription_list")}}') + (a.getAttribute('data-href')?a.getAttribute('data-href'):""),{
+                method: "GET",
+            });
+            if (!response.ok) {
+                element2.innerHTML='<p class="text-center">Something went wrong, please try again.</p>';
+                throw new Error(`Response status: ${response.status}`);
+            }
+            const html = await response.text();
+            element2.innerHTML=html;
+      } catch (error) {
+            console.error(error.message);
+      }
+    }
+}
+
+</script>
+{% endblock %}

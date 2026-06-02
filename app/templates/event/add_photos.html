@@ -1,0 +1,117 @@
+{% extends 'base.html' %}
+
+{% block title %}Add new journey{% endblock %}
+
+
+{% block content %}
+<head>
+    <title>Upload Event Images</title>
+    <style>
+        .image-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 16px;
+            margin-top: 20px;
+        }
+
+        .image-grid img {
+            width: 100%;
+            height: 220px;
+            object-fit: cover;
+            border: 1px solid #ccc;
+            border-radius: 8px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+
+        .image-preview img {
+            margin-top: 20px;
+            width: 300px;
+            height: 300px;
+            object-fit: cover;
+            border: 1px solid #ccc;
+            border-radius: 8px;
+        }
+    </style>
+</head>
+{% if can_upload_multiple_photos %}
+<div class="container mt-4">
+    <h1>You Can Upload Multiple Images</h1>
+
+    <br />
+
+    <form method="POST" enctype="multipart/form-data" action="{{url_for('upload_photos_to_event', event_id=event_id)}}">
+        <input type="file" name="image_files" accept="image/*" multiple required onchange="previewImages(this)">
+
+        <br />
+
+        <div id="preview" class="image-grid"></div>
+
+        <br />
+
+        <div class="col text-start">
+            <button type="submit" class="btn btn-primary">Upload</button>
+            <a href="{{ url_for('journey', journey_id=journey_id) }}" class="btn btn-primary">Cancel</a>
+        </div>
+    </form>
+</div>
+{% else %}
+<div class="container mt-4">
+    <h1>Upload Photo for Your Event</h1>
+    {% if not g.premium %}
+    <p>
+        Want to upload more memories? <strong><a href="/subscriptions">Upgrade to a subscription</a></strong> and enjoy unlimited photo uploads for your journeys!
+    </p>
+    {% endif %}
+    <br />
+
+    <form method="POST" enctype="multipart/form-data" action="{{url_for('upload_photos_to_event', event_id=event_id)}}">
+        <input type="file" name="image_file" accept="image/*" required onchange="previewImage(this)">
+
+        <br />
+
+        <div id="preview-single-image" class="image-preview"></div>
+
+        <br />
+
+        <div class="col text-start">
+            <button type="submit" class="btn btn-primary">Upload</button>
+            <a href="{{ url_for('journey', journey_id=journey_id) }}" class="btn btn-primary">Cancel</a>
+        </div>
+    </form>
+</div>
+
+{% endif %}
+<script>
+    function previewImages(input) {
+        const previewContainer = document.getElementById('preview');
+        previewContainer.innerHTML = ""; // clear old previews
+        const files = input.files;
+
+        for (let i = 0; i < files.length; i++) {
+            const reader = new FileReader();
+            reader.onload = function (e) {
+                const img = document.createElement('img');
+                img.src = e.target.result;
+                previewContainer.appendChild(img);
+            };
+            reader.readAsDataURL(files[i]);
+        }
+    }
+
+    function previewImage(input) {
+        const previewContainer = document.getElementById('preview-single-image');
+        previewContainer.innerHTML = ""; // Clear old preview
+        const file = input.files[0];
+
+        if (file) {
+            const reader = new FileReader();
+            reader.onload = function (e) {
+                const img = document.createElement('img');
+                img.src = e.target.result;
+                previewContainer.appendChild(img);
+            };
+            reader.readAsDataURL(file);
+        }
+    }
+</script>
+{% endblock %}

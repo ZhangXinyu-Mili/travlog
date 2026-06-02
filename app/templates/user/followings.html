@@ -1,0 +1,219 @@
+{% extends "base.html" %}
+{% block title %}My Followings{% endblock %}
+{% block content %}
+
+<!-- display users -->
+<div class="container mt-4">
+    <div class="d-flex align-items-center">
+        <h2 class="me-2">My Followings</h2>
+    </div>
+    <!--tabs -->
+      <ul class="nav nav-tabs text-center" id="profileTabs" role="tablist">
+          <li class="nav-item" role="presentation">
+              <button class="nav-link active" id="journeys-tab" data-bs-toggle="tab" data-bs-target="#journeys" type="button" role="tab">Journeys</button>
+          </li>
+          <li class="nav-item" role="presentation">
+              <button class="nav-link" id="users-tab" data-bs-toggle="tab" data-bs-target="#users" type="button" role="tab">Users</button>
+          </li>
+          <li class="nav-item" role="presentation">
+              <button class="nav-link" id="locations-tab" data-bs-toggle="tab" data-bs-target="#locations" type="button" role="tab">Locations</button>
+          </li>
+      </ul>
+
+    <div class="tab-content p-3 border border-top-0" id="profileTabsContent">
+    <!--journey tab -->
+    <div class="tab-pane fade show active" id="journeys" role="tabpanel">
+        {% if journeys %}
+        <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4">
+            {% for journey in journeys %}
+            <div class="col">
+                <div class="card h-100 d-flex flex-column">
+                    <h4 class="card-title card-header">
+                        <a href="/journeys/{{ journey.journey_id }}">
+                            {{ journey.title }}
+                        </a>
+                    </h4>
+                    <div class="card-body flex-grow-1">
+                        <p class="text-muted"><i class="bi bi-calendar-check"></i> <small>{{ journey.start_date.strftime('%d/%m/%Y') }}</small></p>
+                        <p class="card-text">{{ journey.description }}</p>
+                    </div>
+                    <div class="d-flex justify-content-between p-3">
+                        <span class="badge bg-{{ status_badges_mapping[journey.status] }}">{{ journey.status.capitalize() }}</span>
+                    </div>
+                    {% if journey.photo %}
+                    <img src="{{ url_for('static', filename='uploads/' + journey.photo) }}" class="card-img-bottom" alt="journey cover image" />
+                    {% endif %}
+                <div class="card-footer text-left">
+                    <button
+                      type="button"
+                      class="btn btn-danger btn-sm"
+                      data-bs-toggle="modal"
+                      data-bs-target="#unfollowModal"
+                      data-bs-form-action="{{ url_for("unfollow", followable_id=journey.journey_id, followable_type='journey') }}"
+                    > Unfollow</button>
+                </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        <!--journey pagination -->
+        <nav class="mt-4">
+            <ul class="pagination justify-content-center">
+                {% if journeys_page > 1 %}
+                <li class="page-item">
+                    <a class="page-link" href="?journeys_page={{ journeys_page - 1 }}" aria-label="Previous">
+                        <span aria-hidden="true">&laquo;</span>
+                    </a>
+                </li>
+                {% endif %}
+                {% for page in range(1, total_journeys_pages + 1) %}
+                <li class="page-item {% if page == journeys_page %}active{% endif %}">
+                    <a class="page-link" href="?page={{ page }}">{{ page }}</a>
+                </li>
+                {% endfor %}
+                {% if journeys_page < total_journeys_pages %} <li class="page-item">
+                    <a class="page-link" href="?journeys_page={{ journeys_page + 1 }}" aria-label="Next">
+                        <span aria-hidden="true">&raquo;</span>
+                    </a>
+                    </li>
+                    {% endif %}
+            </ul>
+        </nav>
+        {% else %}
+        <p>No following journeys.</p>
+        {% endif %}
+    </div>
+    <!--users tab -->
+    <div class="tab-pane fade" id="users" role="tabpanel">
+        {% if users %}
+          <div class="table-responsive">
+            <table class="table bg-tuo text-blue align-middle">
+                <thead>
+                    <tr>
+                        <th scope="col">
+                            <div class="d-flex">
+                                <div class="w-25 pe-2"></div>
+                                <span>Username</span>
+                            </div>
+                        </th>
+                        <th>Unfollow</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for user in users %}
+                    <tr>
+                        <td scope="row">
+                            <div class="d-flex align-items-center">
+                                <div class="w-25 pe-2 d-flex justify-content-center"><img class="rounded" width="50" height="50" src="{{ user_profile_image(user) }}" /></div>
+                                <a href="{{ url_for('view_profile', user_id=user.user_id) }}"><span>{{ user.username }}</span></a>
+                            </div>
+                        </td>
+                        <td><button type="button" class="btn btn-danger btn-sm" data-bs-toggle="modal" data-bs-target="#unfollowModal" data-bs-form-action="{{ url_for("unfollow", followable_id=user.user_id, followable_type='user') }}"> Unfollow</button></td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+          <!--user pagination -->
+          <nav class="mt-4">
+            <ul class="pagination justify-content-center">
+              {% if users_page > 1 %}
+              <li class="page-item">
+                <a class="page-link" href="?users_page={{ users_page - 1 }}" aria-label="Previous">
+                  <span aria-hidden="true">&laquo;</span>
+                </a>
+              </li>
+              {% endif %}
+              {% for page in range(1, total_users_pages + 1) %}
+              <li class="page-item {% if page == users_page %}active{% endif %}">
+                <a class="page-link" href="?page={{ page }}">{{ page }}</a>
+              </li>
+              {% endfor %}
+              {% if users_page < total_users_pages %}
+              <li class="page-item">
+                <a class="page-link" href="?users_page={{ users_page + 1 }}" aria-label="Next">
+                  <span aria-hidden="true">&raquo;</span>
+                </a>
+              </li>
+              {% endif %}
+            </ul>
+          </nav>
+          {% else %}
+            <p>No following users.</p>
+          {% endif %}
+    </div>
+    <!--locations tab -->
+    <div class="tab-pane fade" id="locations" role="tabpanel">
+        {% if locations %}
+          <div class="table-responsive">
+            <table class="table bg-tuo text-blue align-middle">
+                <thead>
+                    <tr>
+                        <th>Location</th>
+                        <th>Unfollow</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for location in locations %}
+                    <tr>
+                        <td> <a href="/journeys?search={{ location.location_name }}">{{ location.location_name }}</a></td>
+                        <td><button type="button" class="btn btn-danger btn-sm" data-bs-toggle="modal" data-bs-target="#unfollowModal" data-bs-form-action="{{ url_for("unfollow", followable_id=location.location_id, followable_type='location') }}"> Unfollow</button></td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+          <!--location pagination -->
+          <nav class="mt-4">
+            <ul class="pagination justify-content-center">
+              {% if locations_page > 1 %}
+              <li class="page-item">
+                <a class="page-link" href="?locations_page={{ locations_page - 1 }}" aria-label="Previous">
+                  <span aria-hidden="true">&laquo;</span>
+                </a>
+              </li>
+              {% endif %}
+              {% for page in range(1, total_locations_pages + 1) %}
+              <li class="page-item {% if page == locations_page %}active{% endif %}">
+                <a class="page-link" href="?page={{ page }}">{{ page }}</a>
+              </li>
+              {% endfor %}
+              {% if locations_page < total_locations_pages %}
+              <li class="page-item">
+                <a class="page-link" href="?locations_page={{ locations_page + 1 }}" aria-label="Next">
+                  <span aria-hidden="true">&raquo;</span>
+                </a>
+              </li>
+              {% endif %}
+            </ul>
+          </nav>
+          {% else %}
+            <p>No following locations.</p>
+          {% endif %}
+    </div>
+    </div>
+        </div>
+
+<!-- Unfollow Modal -->
+<div data-bs-dynamic-modal class="modal fade" id="unfollowModal" tabindex="-1" aria-labelledby="unfollowModal" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h1 class="modal-title fs-5" id="unfollowModal">Unfollow</h1>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <p>Do you want to stop following?</p>
+        <form id="unfollowForm" method="post">
+          <input type="hidden" name="followable_id" id="followable_id">
+          <input type="hidden" name="followable_type" id="followable_type">
+        </form>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+        <button form="unfollowForm" type="submit" class="btn btn-primary">Confirm</button>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

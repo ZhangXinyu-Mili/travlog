@@ -1,0 +1,195 @@
+{% extends "base.html" %} {% block title %}Departure Board{% endblock %} {% block content %}
+<div class="container mt-4">
+    <div class="d-flex align-items-center">
+        <h2 class="me-2">Departure Board</h2>
+    </div>
+</div>
+<div class="container mt-4">
+    {% if events %}
+    <div class="row">
+        {% for event in events %}
+        <div class="col-md-4">
+            <div class="card shadow-lg mb-4 card-text">
+                <div class="card-title card-header">
+                    <a href="{{url_for('show_event', event_id=event.event_id)}}">
+                        <h5 class="mb-0">{{ event.title }}</h5>
+                    </a>
+                </div>
+
+                <div class="card-body">
+                    <p class="card-text">{{ event.description }}</p>
+
+                    <p>
+                        <i class="bi bi-calendar-check"></i>
+                        <strong>Start:</strong> {{ event.start_datetime.strftime("%d/%m/%Y %H:%M:%S") }}
+                        <br />
+                        {% if event.end_datetime %}
+                        <i class="bi bi-calendar-x"></i>
+                        <strong>End:</strong> {{ event.end_datetime.strftime("%d/%m/%Y %H:%M:%S") }} {% endif %}
+                    </p>
+
+                    <!-- Event Images -->
+                    {% if event.photos %} {% if event.photos|length == 1 %}
+                    <!-- Display single image full-width -->
+                    <div class="row">
+                        <div class="col">
+                            <img
+                                src="{{ url_for('static', filename='uploads/' + event.photos[0].photo_path) }}"
+                                class="img-thumbnail img-clickable"
+                                style="height: 200px; width: 100%; object-fit: cover; cursor: pointer"
+                                alt="{{ event.title }}"
+                                onclick="showImageModal(
+                                    this.src,
+                                    '{{ event.title }}',
+                                    '{{ event.photos[0].photo_id }}',
+                                    '{{ event.journey_id }}')"
+                            />
+                        </div>
+                    </div>
+                    {% else %}
+                    <!-- Display images in a grid -->
+                    <div class="row row-cols-1 row-cols-md-2 g-3">
+                        {% for photo in event.photos %}
+                        <div class="col">
+                            <img
+                                src="{{ url_for('static', filename='uploads/' + photo.photo_path) }}"
+                                class="img-thumbnail img-clickable"
+                                style="height: 200px; width: 100%; object-fit: cover; cursor: pointer"
+                                alt="{{ event.title }}"
+                                onclick="showImageModal(this.src, '{{ event.title }}', '{{ photo.photo_id }}', '{{ event.journey_id }}')"
+                            />
+                        </div>
+                        {% endfor %}
+                    </div>
+                    {% endif %}
+
+                    <!-- Modal for Enlarged Image -->
+                    <div
+                        class="modal fade"
+                        id="imagePreviewModal"
+                        tabindex="-1"
+                        aria-labelledby="imagePreviewModalLabel"
+                        aria-hidden="true"
+                    >
+                        <div class="modal-dialog modal-dialog-centered modal-lg">
+                            <div class="modal-content">
+                                <div class="modal-header">
+                                    <h5 class="modal-title" id="imagePreviewModalLabel">Image Preview</h5>
+                                    <button
+                                        type="button"
+                                        class="btn-close"
+                                        data-bs-dismiss="modal"
+                                        aria-label="Close"
+                                    ></button>
+                                </div>
+                                <div class="modal-body text-center">
+                                    <img id="modalImage" src="" class="img-fluid" alt="Preview" />
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    {% endif %}
+                </div>
+
+                <div class="card-footer d-flex justify-content-between align-items-center mt-2">
+                    <!-- User can like or unlike the event, aligned to flex-start -->
+                    <div class="d-flex">
+                        <a class="btn d-flex align-items-center {% if event.is_liked %}bg-primary text-white{% else %}btn-outline-primary{% endif %}"
+                           href="{{ url_for('like_event_from_departure_board', event_id=event.event_id) }}">
+                            <i class="bi bi-hand-thumbs-up-fill"></i>
+                            <span class="ms-1" id="like-count">{{ event.like_count }}</span>
+                        </a>
+                    </div>
+
+                    <!-- Comments Link aligned to flex-end -->
+                    <div class="d-flex">
+                        <a href="{{ url_for('show_event', event_id=event.event_id) }}" class="btn btn-link">
+                            View Comments ({{ event.comments_count }})
+                        </a>
+                    </div>
+                </div>
+
+                <ul class="list-group list-group-flush">
+                    <li class="list-group-item card-text d-flex justify-content-between align-items-center">
+                        <small>
+                            <i class="bi bi-journal-bookmark me-1"></i>
+                            <a href="{{url_for('journey', journey_id=event.journey_id)}}">
+                                {{ event.journey_title }}
+                            </a>
+                        </small>
+                        {% if "journey" in event.followable_types %}
+                        <button class="btn btn-secondary btn-sm" disabled>Followed</button>
+                        {% else %}
+                        <button data-follow-btn="{{url_for('follow_journey', journey_id=event.journey_id)}}" class="btn btn-primary btn-sm">Follow</button>
+                        {% endif %}
+                    </li>
+                    {% if event.location_name %}
+                    <li class="list-group-item card-text d-flex justify-content-between align-items-center">
+                        <small>
+                            <i class="bi bi-geo-alt me-1"></i>{{ event.location_name }}
+                        </small>
+                        {% if "location" in event.followable_types %}
+                        <button class="btn btn-secondary btn-sm" disabled>Followed</button>
+                        {% else %}
+                        <button data-follow-btn="{{url_for('follow_location', location_id=event.location_id)}}" class="btn btn-primary btn-sm">Follow</button>
+                        {% endif %}
+                    </li>
+                    {% endif %}
+                    <li class="list-group-item card-text d-flex justify-content-between align-items-center">
+                        <small>
+                            <i class="bi bi-person me-1"></i>
+                            <a href="{{url_for('view_profile', user_id=event.user_id)}}">
+                                {{ event.username }}
+                            </a>
+                        </small>
+                        {% if "user" in event.followable_types %}
+                        <button class="btn btn-secondary btn-sm" disabled>Followed</button>
+                        {% else %}
+                        <button data-follow-btn="{{url_for('follow_user', user_id=event.user_id)}}" class="btn btn-primary btn-sm">Follow</button>
+                        {% endif %}
+                    </li>
+                </ul>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    <nav class="mt-4">
+        <ul class="pagination justify-content-center">
+            {% if current_page > 1 %}
+            <li class="page-item">
+                <a class="page-link" href="?current_page={{ current_page - 1}}" aria-label="Previous">
+                    <span aria-hidden="true">&laquo;</span>
+                </a>
+            </li>
+            {% endif %} {% for page in range(1, total_pages + 1) %}
+            <li class="page-item {% if page == current_page %}active{% endif %}">
+                <a class="page-link" href="?current_page={{ page }}">{{ page }}</a>
+            </li>
+            {% endfor %} {% if current_page < total_pages %}
+            <li class="page-item">
+                <a class="page-link" href="?current_page={{ current_page + 1 }}" aria-label="Next">
+                    <span aria-hidden="true">&raquo;</span>
+                </a>
+            </li>
+            {% endif %}
+        </ul>
+    </nav>
+    {% else %}
+    <p class="text-center">No content available yet. Follow a journey, user, or location of interest to see updates.</p>
+    {% endif %}
+</div>
+
+<script>
+    function showImageModal(src, title, photoId, journeyId) {
+        const modalImage = document.getElementById("modalImage");
+        const modalTitle = document.getElementById("imagePreviewModalLabel");
+
+        console.log(photoId, journeyId);
+        modalImage.src = src;
+        modalTitle.textContent = title;
+
+        const imageModal = new bootstrap.Modal(document.getElementById("imagePreviewModal"));
+        imageModal.show();
+    }
+</script>
+{% endblock %}

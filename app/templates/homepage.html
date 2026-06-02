@@ -1,0 +1,79 @@
+{% extends "base.html" %}
+{% block title %}travlog{% endblock %}
+{% block content %}
+<div class="container mt-2">
+    <div class="row">
+        <div class="col-12 col-md-6 align-self-center">
+                <div class="row align-items-center">
+                    <div class="col-4 col-md-4 d-grid">
+                        <button class="btn btn-yellow fw-bold">explore</button>
+                    </div>
+                    <div class="col-4 col-md-4 d-grid">
+                        <button class="btn btn-yellow fw-bold">create</button>
+                    </div>
+                    <div class="col-4 col-md-4 d-grid">
+                        <button class="btn btn-yellow fw-bold">inspire</button>
+                    </div>
+                </div>
+            <div class="d-flex align-items-center mt-2">
+                <h1>#1 Travel Journey App</h1>
+            </div>
+            <div class="align-items-center">
+                <p>Capture, organize, and relive your travel memories with travlog, the perfect companion for your adventures. Whether you're exploring bustling cities, serene landscapes, or hidden gems, travlog allows you to document every step of your journey.</p>
+                <p>With travlog, your travels become more than just destinations—they’re an ongoing narrative. Relive the magic, anytime, anywhere.</p>
+            </div>
+            <a href="{{ url_for('register') }}" class="btn btn-yellow fw-bold">Start your first journal ></a>
+        </div>
+        <div class="col-12 col-md-6">
+            <img src="/static/images/homepage_pic.jpg" class="img-fluid" alt="homepage">
+        </div>
+    </div>
+
+    {% if journeys %}
+    <div class="row row-cols-1 row-cols-sm-2 row-cols-md-3 row-cols-lg-4 g-4 pt-3">
+        {% for journey in journeys %}
+        <div class="col">
+            <div class="card h-100 d-flex flex-column">
+                <h4 class="card-title card-header">
+                    <a href="/journeys/{{ journey.journey_id }}">
+                        {{ journey.title }}
+                    </a>
+                </h4>
+                <div class="card-body flex-grow-1 card-text">
+                    <p class="text-muted"><i class="bi bi-calendar-check"></i> <small>{{ journey.created_at.strftime('%d/%m/%Y') }}</small></p>
+                    <p class="text-muted"><i class="bi bi-person"></i> <small>{{ journey.username }} {{ user_level(journey.user_id) }}</small></p>
+                    <p class="card-text">{{ journey.description }}</p>
+                </div>
+                {% if journey.photo %}
+                <img src="{{ url_for('static', filename='uploads/' + journey.photo) }}" class="card-img-bottom" alt="journey cover image" />
+                {% endif %}
+
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    <nav class="mt-4">
+        <ul class="pagination justify-content-center">
+            {% if current_page > 1 %}
+            <li class="page-item">
+                <a class="page-link" href="?current_page={{ current_page - 1}}{% if keyword %}&search={{ keyword }}{% endif %}" aria-label="Previous">
+                    <span aria-hidden="true">&laquo;</span>
+                </a>
+            </li>
+            {% endif %}
+            {% for page in range(1, total_pages + 1) %}
+            <li class="page-item {% if page == current_page %}active{% endif %}">
+                <a class="page-link" href="?current_page={{ page }}{% if keyword %}&search={{ keyword }}{% endif %}">{{ page }}</a>
+            </li>
+            {% endfor %}
+            {% if current_page < total_pages %} <li class="page-item">
+                <a class="page-link" href="?current_page={{ current_page + 1 }}{% if keyword %}&search={{ keyword }}{% endif %}" aria-label="Next">
+                    <span aria-hidden="true">&raquo;</span>
+                </a>
+                </li>
+                {% endif %}
+        </ul>
+    </nav>
+    {% endif %}
+</div>
+{% endblock %}

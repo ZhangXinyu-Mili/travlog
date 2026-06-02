@@ -1,0 +1,171 @@
+{% extends "base.html" %}
+{% block title %}Achievements{% endblock %}
+{% block content %}
+<div class="container mt-4">
+    <h2 class="mb-4">Achievements</h2>
+    <ul class="nav nav-underline mb-4">
+        <li class="nav-item">
+            <a class="nav-link {{ 'active' if active_tab == 'recent' else '' }}"
+                href="{{ url_for('recently_awarded_achievements', tab='recent', current_page=1, page_size=page_size) }}">
+                Recent Achievements
+            </a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link {{ 'active' if active_tab == 'leaderboard' else '' }}"
+                href="{{ url_for('recently_awarded_achievements', tab='leaderboard', current_page=1, page_size=page_size) }}">
+                Leaderboard
+            </a>
+        </li>
+    </ul>
+
+    <!-- Tab Content -->
+    <div class="tab-content" id="achievementTabsContent">
+        <!-- Recent Achievements Tab -->
+        {% if active_tab == 'recent' %}
+        <div id="recent">
+            {% if achievements %}
+            <div class="row">
+                {% for achievement in achievements %}
+                <div class="col-md-6 col-lg-3 mb-4">
+                    <div class="card h-100">
+                        <div class="card-header d-flex align-items-center">
+                            <a href="{{ url_for('view_profile', user_id=achievement.user_id) }}"
+                                class="text-decoration-none">
+                                <img src="{{ achievement.profile_image if achievement.profile_image else '/static/images/default-profile.png' }}"
+                                    class="rounded-circle me-2" alt="{{ achievement.username }}'s profile" width="40"
+                                    height="40">
+                                <span class="fw-bold">{{ achievement.username }}</span>
+                            </a>
+                        </div>
+                        <div class="card-body">
+                            <h5 class="card-title">{{ achievement.description }}</h5>                            <p class="card-text">
+                                <span
+                                    class="badge {% if achievement.is_premium %}bg-warning text-dark{% else %}bg-primary{% endif %}">
+                                    {% if achievement.is_premium %}Premium{% else %}Standard{% endif %}
+                                </span>
+                            </p>
+                            <p class="card-text text-muted small">
+                                <i class="bi bi-calendar-check"></i> Achieved on {{
+                                achievement.updated_at.strftime('%d/%m/%Y %I:%M %p') }}
+                            </p>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+            <!-- Pagination for Recent Achievements -->
+            <nav class="mt-4">
+                <ul class="pagination justify-content-center">
+                    <li class="page-item {% if current_page <= 1 %}disabled{% endif %}">
+                        <a class="page-link"
+                            href="{{ url_for('recently_awarded_achievements', current_page=current_page-1, page_size=page_size, tab='recent') if current_page > 1 else '#' }}"
+                            aria-label="Previous">
+                            <span aria-hidden="true">&laquo;</span>
+                        </a>
+                    </li>
+                    {% for page_num in range(1, total_pages + 1) %}
+                    <li class="page-item {% if page_num == current_page %}active{% endif %}">
+                        <a class="page-link"
+                            href="{{ url_for('recently_awarded_achievements', current_page=page_num, page_size=page_size, tab='recent') }}">
+                            {{ page_num }}
+                        </a>
+                    </li>
+                    {% endfor %}
+                    <li class="page-item {% if current_page >= total_pages %}disabled{% endif %}">
+                        <a class="page-link"
+                            href="{{ url_for('recently_awarded_achievements', current_page=current_page+1, page_size=page_size, tab='recent') if current_page < total_pages else '#' }}"
+                            aria-label="Next">
+                            <span aria-hidden="true">&raquo;</span>
+                        </a>
+                    </li>
+                </ul>
+            </nav>
+            {% else %}
+            <div class="alert alert-info">
+                No achievements have been awarded yet.
+            </div>
+            {% endif %}
+        </div>
+        {% else %}
+        <!-- Leaderboard Tab -->
+        <div id="leaderboard">
+            {% if leaderboard %}
+            <div class="table-responsive">
+                <table class="table bg-tuo text-blue align-middle">
+                    <thead>
+                        <tr>
+                            <th scope="col" class="text-center">Rank</th>
+                            <th scope="col">
+                                <div class="d-flex">
+                                    <div class="w-25 pe-2"></div>
+                                    <span>User</span>
+                                </div>
+                            </th>
+                            <th scope="col" class="text-center">Achievements</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for user in leaderboard %}
+                        <tr>
+                            <td class="text-center">
+                                <span class="badge bg-secondary rounded-pill">
+                                    {{ user.ranking }}
+                                </span>
+                            </td>
+                            <td scope="row">
+                                <div class="d-flex align-items-center">
+                                    <div class="w-25 pe-2 d-flex justify-content-center">
+                                        <img class="rounded" width="50" height="50"
+                                            src="{{ user.profile_image if user.profile_image else '/static/images/default-profile.png' }}"
+                                            alt="{{ user.username }}'s profile">
+                                    </div>
+                                    <a href="{{ url_for('view_profile', user_id=user.user_id) }}">
+                                        <span>{{ user.username }}</span>
+                                    </a>
+                                </div>
+                            </td>
+                            <td class="text-center">
+                                <span class="badge bg-primary rounded-pill">{{ user.completed_achievements }}</span>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            <!-- Pagination for Leaderboard -->
+            <nav class="mt-4">
+                <ul class="pagination justify-content-center">
+                    <li class="page-item {% if current_page <= 1 %}disabled{% endif %}">
+                        <a class="page-link"
+                            href="{{ url_for('recently_awarded_achievements', current_page=current_page-1, page_size=page_size, tab='leaderboard') if current_page > 1 else '#' }}"
+                            aria-label="Previous">
+                            <span aria-hidden="true">&laquo;</span>
+                        </a>
+                    </li>
+                    {% for page_num in range(1, leaderboard_total_pages + 1) %}
+                    <li class="page-item {% if page_num == current_page %}active{% endif %}">
+                        <a class="page-link"
+                            href="{{ url_for('recently_awarded_achievements', current_page=page_num, page_size=page_size, tab='leaderboard') }}">
+                            {{ page_num }}
+                        </a>
+                    </li>
+                    {% endfor %}
+                    <li class="page-item {% if current_page >= leaderboard_total_pages %}disabled{% endif %}">
+                        <a class="page-link"
+                            href="{{ url_for('recently_awarded_achievements', current_page=current_page+1, page_size=page_size, tab='leaderboard') if current_page < leaderboard_total_pages else '#' }}"
+                            aria-label="Next">
+                            <span aria-hidden="true">&raquo;</span>
+                        </a>
+                    </li>
+                </ul>
+            </nav>
+            {% else %}
+            <div class="alert alert-info">
+                No users with achievements found.
+            </div>
+            {% endif %}
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

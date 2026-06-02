@@ -1,0 +1,284 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{% block title %} Journeys {% endblock %} | TravLog</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet"
+        integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous" />
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons/font/bootstrap-icons.css">
+</head>
+
+<body class="d-flex flex-column min-vh-100">
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"
+        integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz"
+        crossorigin="anonymous"></script>
+
+    {% block header %}
+    <header class="p-3 mb-3 border-bottom">
+        <nav class="navbar navbar-expand-lg">
+            <div class="container-fluid">
+                <a href="/" class="d-flex align-items-center mb-2 mb-lg-0 link-body-emphasis text-decoration-none">
+                    <span class="logo-text">Travlog</span>
+                </a>
+
+                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarToggler"
+                    aria-controls="navbarToggler" aria-expanded="false" aria-label="Toggle navigation">
+                    <span class="navbar-toggler-icon"></span>
+                </button>
+
+                <div class="collapse navbar-collapse justify-content-end" id="navbarToggler">
+                    <ul class="nav row col-auto mb-2 justify-content-end mb-md-0">
+                        {% if 'role' in session and session['role'] in ['moderator', 'editor', 'admin', 'supporttech'] %}
+                        <li class="col-12 col-lg-auto nav-item dropdown">
+                            <a class="nav-link dropdown-toggle px-2 {% if request.path in [url_for('hidden_journeys'), url_for('users'), url_for('list_announcements')] %}link-secondary{% else %}link-body-emphasis{% endif %}" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                Staff Tools
+                            </a>
+                            <ul class="dropdown-menu">
+                                <li><a class="dropdown-item" href="{{ url_for('reports') }}">Reports</a></li>
+                                {% if session['role'] in ['admin', 'supporttech'] %}
+                                <li><a class="dropdown-item" href="{{ url_for('users') }}">User Management</a></li>
+                                {% endif %}
+                                {% if session['role'] in ['editor', 'admin', 'supporttech'] %}
+                                <li><a class="dropdown-item" href="{{ url_for('list_announcements') }}">Announcements Management</a></li>
+                                <li><a class="dropdown-item" href="{{ url_for('hidden_journeys') }}">Hidden Journeys</a></li>
+                                <li><a class="dropdown-item" href="{{ url_for('helpdesk_queue') }}">Helpdesk Queue</a></li>
+                                {% endif %}
+                            </ul>
+                        </li>
+                        {% endif %}
+
+                        {% if 'user_id' in session %}
+                        <li class="col-12 col-lg-auto">
+                            <a href="{{ url_for('journeys') }}"
+                                class="nav-link px-2 {% if request.path == url_for('journeys') %}link-secondary{% else %}link-body-emphasis{% endif %}">Public Journeys</a>
+                        </li>
+                        <li class="col-12 col-lg-auto">
+                            <a href="{{ url_for('community_users') }}"
+                                class="nav-link px-2 {% if request.path == url_for('community_users') %}link-secondary{% else %}link-body-emphasis{% endif %}">Community Users</a>
+                        </li>
+                        <li class="col-12 col-lg-auto">
+                            <a href="{{ url_for('recently_awarded_achievements') }}"
+                                class="nav-link px-2 {% if request.path == url_for('recently_awarded_achievements') %}link-secondary{% else %}link-body-emphasis{% endif %}">Recent Achievements</a>
+                        </li>
+                        <li class="col-12 col-lg-auto nav-item dropdown">
+                            <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                <img src="{{ user_profile_image(g.user) }}" alt="Profile Image" class="rounded-circle" width="40">
+                                {{ g.user["username"] }}
+                            </a>
+                            <ul class="dropdown-menu">
+                                <li>
+                                    <a href="{{ url_for('my_journeys') }}" class="dropdown-item">My Journeys</a>
+                                </li>
+                                <li>
+                                    <a href="{{ url_for('view_my_profile') }}" class="dropdown-item">My Profile</a>
+                                </li>
+                                <li>
+                                    <a href="{{ url_for('get_subscription_plan') }}" class="dropdown-item">Subscription</a>
+                                </li>
+                                <li>
+                                    <a href="{{ url_for('departure_board') }}" class="dropdown-item">Departure Board</a>
+                                </li>
+                                <li>
+                                    <a href="{{ url_for('my_followings') }}" class="dropdown-item">My Followings</a>
+                                </li>
+                                <li>
+                                    <a href="{{url_for("my_message_list")}}" class="dropdown-item">Message list</a>
+                                </li>
+                                <li><hr class="dropdown-divider"></li>
+                                <li>
+                                    <form action="{{ url_for('logout') }}" method="post" class="d-inline">
+                                        <button type="submit" class="dropdown-item link-danger">Logout</button>
+                                    </form>
+                                </li>
+                            </ul>
+                        {% else %}
+                        <li class="col-12 col-lg-auto">
+                            <a href="{{ url_for('login') }}" class="nav-link px-2 {% if request.path == url_for('login') %}link-secondary{% else %}link-body-emphasis{% endif %}">Login</a>
+                        </li>
+                        <li class="col-12 col-lg-auto">
+                            <a href="{{ url_for('register') }}" class="nav-link px-2 {% if request.path == url_for('register') %}link-secondary{% else %}link-body-emphasis{% endif %}">Register</a>
+                        </li>
+                        {% endif %}
+                    </ul>
+                </div>
+            </div>
+        </nav>
+    </header>
+    {% endblock %}
+
+    <div class="container flex-grow-1">
+        {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+        {% for category, message in messages %}
+            <div class="alert alert-{{category}} alert-dismissible fade show" role="alert">
+                {{ message|safe }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+        {% endfor %}
+        {% endif %}
+        {% endwith %}
+
+        {% block content %}{% endblock %}
+
+        <div class="position-fixed top-0 start-50 translate-middle-x">
+            <div id="toast-success" class="toast mt-5 text-bg-success" role="alert" aria-live="assertive" aria-atomic="true">
+                <div class="toast-body"></div>
+            </div>
+
+            <div id="toast-danger" class="toast mt-5 text-bg-danger" role="alert" aria-live="assertive" aria-atomic="true">
+                <div class="toast-body"></div>
+            </div>
+        </div>
+    </div>
+
+    <footer class="mt-4 bg-dark-blue text-white py-4">
+        <div class="container">
+            <div class="row">
+                <!-- First Column -->
+                <div class="col-md-3">
+                    <a href="/" class="d-flex align-items-center mb-2 mb-lg-0 text-decoration-none">
+                        <span class="logo-text text-white">Travlog</span>
+                    </a>
+                    <p class="fst-italic small">The World is Calling</p>
+                    <p class="fst-italic small">founded in 2025<br>by Lincoln University TUO</p>
+                </div>
+
+                <!-- Second Column -->
+                {% if 'user_id' in session %}
+                <div class="col-md-3 d-flex flex-column justify-content-end">
+                    <ul class="list-unstyled">
+                        <li><a href="{{ url_for('journeys') }}" class="text-white text-decoration-none">Public Journeys</a></li>
+                        <li><a href="{{ url_for('community_users') }}" class="text-white text-decoration-none">Community Users</a></li>
+                        <li><a href="{{ url_for('recently_awarded_achievements') }}" class="text-white text-decoration-none">Recent Achievements</a></li>
+                    </ul>
+                </div>
+                {% endif %}
+
+                <!-- Third Column -->
+                <div class="col-md-3 d-flex flex-column justify-content-end">
+                    <ul class="list-unstyled">
+                        {% if 'user_id' not in session %}
+                        <li><a href="{{ url_for('login') }}" class="text-white text-decoration-none">Login</a></li>
+                        <li><a href="{{ url_for('register') }}" class="text-white text-decoration-none">Sign up</a></li>
+                        {% endif %}
+                        {% if 'user_id' in session %}
+                        <li><a href="{{ url_for('my_journeys') }}" class="text-white text-decoration-none">My Journeys</a></li>
+                        <li><a href="{{ url_for('view_my_profile') }}" class="text-white text-decoration-none">My Profile</a></li>
+                        <li>
+                            <form action="{{ url_for('logout') }}" method="post" class="d-inline">
+                                <button type="submit"
+                                    class="btn btn-link text-white text-decoration-none p-0">Logout</button>
+                            </form>
+                        </li>
+                        {% endif %}
+                    </ul>
+                </div>
+
+                <!-- Fourth Column -->
+                {% if 'user_id' in session %}
+                <div class="col-md-3 d-flex flex-column justify-content-end">
+                    <ul class="list-unstyled">
+                        <li><a href="{{ url_for('get_subscription_plan') }}" class="text-white text-decoration-none">Subscription</a></li>
+                        <li><a href="{{ url_for('my_issues') }}" class="text-white text-decoration-none">Helpdesk</a></li>
+                    </ul>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        (function () {
+          'use strict'
+
+          // Fetch all the forms we want to apply custom Bootstrap validation styles to
+          var forms = document.querySelectorAll('.needs-validation')
+
+          // Loop over them and prevent submission
+          Array.prototype.slice.call(forms)
+            .forEach(function (form) {
+              form.addEventListener('submit', function (event) {
+                if (!form.checkValidity()) {
+                  event.preventDefault()
+                  event.stopPropagation()
+                }
+
+                form.classList.add('was-validated')
+              }, false)
+            })
+        })()
+    </script>
+    <script>
+      const tooltipTriggerList = document.querySelectorAll('[data-bs-toggle="tooltip"]')
+      const tooltipList = [...tooltipTriggerList].map(tooltipTriggerEl => new bootstrap.Tooltip(tooltipTriggerEl))
+    </script>
+    <script>
+      const modalList = document.querySelectorAll('[data-bs-dynamic-modal]')
+      modalList.forEach(function (modal) {
+        modal.addEventListener('show.bs.modal', event => {
+          // Button that triggered the modal
+          const button = event.relatedTarget
+
+          // Update form action inside the modal
+          const formAction = button.getAttribute('data-bs-form-action')
+          const form = modal.querySelector('form')
+          form.action = formAction
+        })
+      })
+    </script>
+    <script>
+      const followBtns = document.querySelectorAll('[data-follow-btn*="follow"]')
+      followBtns.forEach(function (btn) {
+        btn.addEventListener('click', event => {
+          event.preventDefault()
+
+          const toastEls = {
+            success: document.getElementById("toast-success"),
+            danger: document.getElementById("toast-danger"),
+          }
+
+          const url = event.target.getAttribute('data-follow-btn')
+          fetch(url, {
+            method: "post",
+          }).then(res => {
+            if (!res.ok) {
+              return res.json().then(data => {
+                const toastEl = toastEls[data.category]
+                const toast = bootstrap.Toast.getOrCreateInstance(toastEl)
+
+                toastEl.querySelector('.toast-body').innerHTML = data.message
+                toast.show()
+              })
+            }
+
+            res.json().then(data => {
+              const toastEl = toastEls[data.category]
+              const toast = bootstrap.Toast.getOrCreateInstance(toastEl)
+
+              toastEl.querySelector('.toast-body').innerHTML = data.message
+              toast.show()
+              const followBtns = document.querySelectorAll(`[data-follow-btn="${url}"]`)
+              followBtns.forEach(btn => {
+                btn.disabled = true
+                btn.classList.add("btn-secondary")
+                btn.innerHTML = "Followed"
+              })
+            })
+          }).catch(err => {
+            console.error(err)
+
+            const toastEl = document.getElementById("toast-danger")
+            const toast = bootstrap.Toast.getOrCreateInstance(toastEl)
+            toast.hide()
+
+            toastEl.querySelector('.toast-body').innerHTML = "Something went wrong"
+            toast.show()
+          })
+        })
+      })
+    </script>
+</body>
+</html>

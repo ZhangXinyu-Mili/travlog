@@ -1,0 +1,33 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="d-flex align-items-center">
+        <h2 class="me-2">Edit Journey</h2>
+        <span> - by editors and admins</span>
+    </div>
+    
+    <form method="post">
+        <div class="row row-cols-1 pt-3 g-4">
+            <div class="col">
+                <label for="title" class="form-label">Title</label>
+                <input type="text" id="title" name="title"
+                    class="form-control {% if title_error %} is-invalid{% endif %}" value="{{ title }}"
+                    required>
+                <div class="invalid-feedback">{{ title_error }}</div>
+            </div>
+            <div class="col">
+                <label for="description" class="form-label">Description</label>
+                <textarea id="description" name="description"
+                    class="form-control {% if description_error %} is-invalid{% endif %}" rows="5"
+                    required>{{ description }}</textarea>
+                <div class="invalid-feedback">{{ description_error }}</div>
+            </div>
+            <div class="col text-end">
+                <button type="submit" class="btn btn-primary">Submit</button>
+                <a href="{{ url_for('journey', journey_id=journey_id) }}" class="btn btn-primary">Cancel</a>
+            </div>
+        </div>
+    </form>
+</div>
+{% endblock %}

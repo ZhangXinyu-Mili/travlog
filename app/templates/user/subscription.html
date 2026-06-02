@@ -1,0 +1,82 @@
+{% extends "base.html" %}
+{% block title %}Journeys{% endblock %}
+{% block content %}
+
+<!-- display public journeys-->
+<div class="container mt-4">
+    <div class="d-flex align-items-center"> 
+        <h2 class="me-2">Subscription</h2>
+        <span> - Discover subscription plan</span>
+    </div>
+    <div class="row row-cols-1 row-cols-sm-2 row-cols-md-3 row-cols-lg-4 g-4 pt-3">
+        <div class="col">
+        <div class="card h-100 d-flex flex-column">
+            <h4 class="card-title card-header">
+                Free Trial
+            </h4>
+            <div class="card-body flex-grow-1 card-text">
+                <p class="card-text">Duration: {{free_trial.duration}} days</p>
+                <p class="card-text">Price: ${{free_trial.price}}</p>
+                <button class="btn btn-primary" type="button" data-bs-toggle="modal" data-bs-target="#startTrial">Start</button>
+            </div>
+        </div>
+        </div>
+        <div class="col">
+        <div class="card h-100 d-flex flex-column">
+            <h4 class="card-title card-header">
+                One Month Plan
+            </h4>
+            <div class="card-body flex-grow-1 card-text">
+                <p class="card-text">Duration: {{monthly_subscription.duration}} days</p>
+                <p class="card-text">Price: ${{monthly_subscription.price}}</p>
+                <a href="/subscriptions/{{ monthly_subscription.subscription_type_id }}"class="btn btn-primary">Subscribe</a>
+            </div>
+        </div>
+        </div>
+        <div class="col">
+        <div class="card h-100 d-flex flex-column">
+            <h4 class="card-title card-header">
+                One Quarter Plan
+            </h4>
+            <div class="card-body flex-grow-1 card-text">
+                <p class="card-text">Duration: {{quarterly_subscription.duration}} days</p>
+                <p class="card-text">Price: ${{quarterly_subscription.price}}</p>
+                <a href="/subscriptions/{{ quarterly_subscription.subscription_type_id }}"class="btn btn-primary">Subscribe</a>
+            </div>
+        </div>
+        </div>
+        <div class="col">
+        <div class="card h-100 d-flex flex-column">
+            <h4 class="card-title card-header">
+                One Year Plan
+            </h4>
+            <div class="card-body flex-grow-1 card-text">
+                <p class="card-text">Duration: {{yearly_subscription.duration}} days</p>
+                <p class="card-text">Price: ${{yearly_subscription.price}}</p>
+                <a href="/subscriptions/{{ yearly_subscription.subscription_type_id }}"class="btn btn-primary">Subscribe</a>
+            </div>
+        </div>
+        </div>
+    </div>
+</div>
+
+<div id="startTrial" class="modal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Start Free Trial</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <p>Would you like to start a free trial?</p>
+            </div>
+            <div class="modal-footer">
+                <form method="post">
+                    <button type="submit" class="btn btn-primary">Confirm</button>
+                </form>
+                <button type="button" class="btn btn-primary" data-bs-dismiss="modal">Cancel</button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

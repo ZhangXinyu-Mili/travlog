@@ -1,0 +1,96 @@
+{% extends 'base.html' %}
+{% block title %}Create events{% endblock %}
+{% block content %}
+
+<div class="container mt-4">
+    {% if form_title is undefined %}
+    <h2>Add Event</h2>
+
+    <form action="{{url_for('add_event', journey_id = journey_id)}}" method="POST" class="needs-validation" novalidate>
+    {% else %}
+    <h2>{{form_title}}</h2>
+    <form action="{{url_for('edit_event', event_id = event_id)}}" method="POST" class="needs-validation" novalidate>
+        <input type="hidden" name="journey_id" class="form-control" value="{{journey_id}}">
+    {% endif %}
+        <div class="row row-cols-1 g-4 pt-3">
+            <div class="col">
+                <label for="event-title" class="form-label">Title</label>
+                <input type="text" id="event-title" name="event-title" class="form-control{% if title_error %} is-invalid{% endif %}" maxlength=100 value="{{title}}" required>
+                <div class="invalid-feedback">{{ title_error }}</div>
+            </div>
+            <div class="col">
+                <label for="event-description" class="form-label">Description</label>
+                <textarea id="event-description" name="event-description" rows="4" class="form-control{% if description_error %} is-invalid{% endif %}" maxlength=1000 required>{{description}}</textarea>
+                <div class="invalid-feedback">{{ description_error }}</div>
+            </div>
+            <div class="col">
+                <div class="row">
+                    <div class="col-12 col-lg">
+                        <label for="event-start-date" class="form-label">Start date</label>
+                        <input type="date" name="event-start-date" id="event-start-date" class="form-control{% if start_date_error %} is-invalid{% endif %}" value="{{start_date}}" required>
+                        <div class="invalid-feedback">{{ start_date_error }}</div>
+                    </div>
+                    <div class="col-12 col-lg">
+                        <label for="event-start-time" class="form-label">Start time</label>
+                        <input type="time" name="event-start-time" id="event-start-time" class="form-control{% if start_time_error %} is-invalid{% endif %}" value="{{start_time}}" required>
+                        <div class="invalid-feedback">{{ startTime_error }}</div>
+                    </div>
+                </div>
+            </div>
+            <div class="col">
+                <div class="row">
+                    <div class="col-12 col-lg">
+                        <label for="event-end-date" class="form-label">End date</label>
+                        <input type="date" name="event-end-date" id="event-end-date" class="form-control{% if end_date_error %} is-invalid{% endif %}" value="{{end_date}}">
+                        <div class="invalid-feedback">{{ end_date_error }}</div>
+                    </div>
+                    <div class="col-12 col-lg">
+                        <label for="event-end-time" class="form-label">End time</label>
+                        <input type="time" name="event-end-time" id="event-end-time" class="form-control{% if end_time_error %} is-invalid{% endif %}" value="{{end_time}}">
+                        <div class="invalid-feedback">{{ end_time_error }}</div>
+                    </div>
+                </div>
+            </div>
+            <div class="col">
+                <label for="event-location" class="form-label">Location</label>
+                <input type="text" name="event-location" id="event-location" class="form-control{% if location_error %} is-invalid{% endif %}" maxlength=255 value="{{location}}">
+                {% if my_locations or other_locations %}
+                <select class="form-select" id="users-location" onchange="get_location_value(this)">
+                    {% if my_locations %}
+                    <option value="" selected disabled >My Previous locations</div>
+                    {% for item in my_locations %}
+                    <option value="{{item['location_name']}}">{{item['location_name']}}</option>
+                    {% endfor %}
+                    {% endif %}
+    
+                    {% if other_locations %}
+                    <option value="" disabled>Other travellers'</div>
+                    {% for item in other_locations %}
+                    <option value="{{item['location_name']}}">{{item['location_name']}}</option>
+                    {% endfor %}
+                    {% endif %}
+                </select>
+                {% endif %}
+                <div class="invalid-feedback">{{ location_error }}</div>
+            </div>
+            <div class="col text-end">
+                <button type="submit" class="btn btn-primary">Submit</button>
+                <a class="btn btn-primary" href="{{ url_for('journey', journey_id=journey_id) }}">Cancel</a>
+            </div>
+        </div>
+    </form>
+</div>
+<script>
+  
+  function get_location_value (element) {  
+      const location_input = document.getElementById('event-location');
+      for (const child of element.children) {
+          if (child.selected) {
+            location_input.value = child.value;
+          }
+      }
+      element.children[0].selected = true;
+  }
+</script>
+
+{% endblock %}

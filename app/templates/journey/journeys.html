@@ -1,0 +1,81 @@
+{% extends "base.html" %}
+{% block title %}Journeys{% endblock %}
+{% block content %}
+<!-- display new announcements-->
+{% if announcements %}
+<div class="container mt-4">
+    <div class="d-flex align-items-center">
+        <h2 class="me-2">Announcements</h2>
+        <span> - What's new in the community</span>
+    </div>
+    <div class="list-group mt-3">
+        {% for announcement in announcements %}
+        <div class="list-group-item">
+            <h5 class="mb-1 text-dark-blue">{{ announcement.title }}</h5>
+            <p class="mb-1 text-blue">{{ announcement.content }}</p>
+            <small class="text-muted"><i class="bi bi-calendar-check"></i> {{ announcement.created_at.strftime('%d/%m/%Y') }} <i class="bi bi-person"></i> {{announcement.publisher}}</small>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% endif %}
+<!-- display public journeys-->
+<div class="container mt-4">
+    <div class="d-flex align-items-center">
+        <h2 class="me-2">Public Journeys</h2>
+        <span> - Discover other travellers' choice</span>
+    </div>
+    <form class="d-flex" role="search" method="GET">
+        <input class="form-control me-2" type="search" value="{{ keyword if keyword else '' }}" placeholder="Search for a journey" aria-label="Search" name="search">
+        <button class="btn btn-primary" type="submit" value="search">Search</button>
+    </form>
+    {% if journeys %}
+    <div class="row row-cols-1 row-cols-sm-2 row-cols-md-3 row-cols-lg-4 g-4 pt-3">
+        {% for journey in journeys %}
+        <div class="col">
+            <div class="card h-100 d-flex flex-column">
+                <h4 class="card-title card-header">
+                    <a href="/journeys/{{ journey.journey_id }}">
+                        {{ journey.title }}
+                    </a>
+                </h4>
+                <div class="card-body flex-grow-1 card-text">
+                    <p class="text-muted"><i class="bi bi-calendar-check"></i> <small>{{ journey.created_at.strftime('%d/%m/%Y') }}</small></p>
+                    <p class="text-muted"><i class="bi bi-person"></i> <small>{{ journey.username }} {{ user_level(journey.user_id) }}</small></p>
+                    <p class="card-text">{{ journey.description }}</p>
+                </div>
+                {% if journey.photo %}
+                <img src="{{ url_for('static', filename='uploads/' + journey.photo) }}" class="card-img-bottom" alt="journey cover image" />
+                {% endif %}
+
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    <nav class="mt-4">
+        <ul class="pagination justify-content-center">
+            {% if current_page > 1 %}
+            <li class="page-item">
+                <a class="page-link" href="?current_page={{ current_page - 1}}{% if keyword %}&search={{ keyword }}{% endif %}" aria-label="Previous">
+                    <span aria-hidden="true">&laquo;</span>
+                </a>
+            </li>
+            {% endif %}
+            {% for page in range(1, total_pages + 1) %}
+            <li class="page-item {% if page == current_page %}active{% endif %}">
+                <a class="page-link" href="?current_page={{ page }}{% if keyword %}&search={{ keyword }}{% endif %}">{{ page }}</a>
+            </li>
+            {% endfor %}
+            {% if current_page < total_pages %} <li class="page-item">
+                <a class="page-link" href="?current_page={{ current_page + 1 }}{% if keyword %}&search={{ keyword }}{% endif %}" aria-label="Next">
+                    <span aria-hidden="true">&raquo;</span>
+                </a>
+                </li>
+                {% endif %}
+        </ul>
+    </nav>
+    {% else %}
+        <p class="text-center">No journeys available.</p>
+    {% endif %}
+</div>
+{% endblock %}

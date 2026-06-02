@@ -1,0 +1,73 @@
+{% extends "base.html" %}
+{% block title %}Hidden Journeys{% endblock %}
+{% block content %}
+
+<!-- display hidden journeys-->
+<div class="container mt-4">
+    <div class=" align-items-center">
+        <h2 class="me-2">Hidden Journeys</h2>
+    </div>
+    
+    <div class="pt-3">
+        <div class="table-responsive">
+        <table class="table bg-tuo text-blue align-middle">
+            <thead>
+                <tr>
+                    <th scope="col">
+                        <span>Username</span>
+                    </th>
+                    <th scope="col">Hidden Journeys</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for journey in journeys %}
+                <tr>
+                    <td scope="row">
+                        <div class="align-items-center">
+                        {% if 'role' in session and session['role'] == 'admin' %}
+                        <a href="{{ url_for('view_profile', user_id=journey.user_id) }}"><span>{{ journey.username }}</span></a>
+                        {% else %}
+                        <span>{{ journey.username }}</span>
+                        {% endif %}
+                        </div>
+                    </td>
+                    
+                    <td>
+                        {% set hidden_journey = journey.journey_ids_and_titles.split(',') %}
+                            {% for i in range(0, hidden_journey|length, 2) %}
+                            <li>
+                                <a href="/journeys/{{ hidden_journey[i] }}">{{ hidden_journey[i+1] }}</a>
+                            </li>    
+                            {% endfor %}
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        </div>
+    </div>
+    <nav class="mt-4">
+        <ul class="pagination justify-content-center">
+            {% if current_page > 1 %}
+            <li class="page-item">
+                <a class="page-link" href="?page={{ current_page - 1 }}" aria-label="Previous">
+                    <span aria-hidden="true">&laquo;</span>
+                </a>
+            </li>
+            {% endif %}
+            {% for page in range(1, total_pages + 1) %}
+            <li class="page-item {% if page == current_page %}active{% endif %}">
+                <a class="page-link" href="?current_page={{ page }}">{{ page }}</a>
+            </li>
+            {% endfor %}
+            {% if current_page < total_pages %} <li class="page-item">
+                <a class="page-link" href="?current_page={{ current_page + 1 }}" aria-label="Next">
+                    <span aria-hidden="true">&raquo;</span>
+                </a>
+                </li>
+                {% endif %}
+        </ul>
+    </nav>
+    
+</div>
+{% endblock %}

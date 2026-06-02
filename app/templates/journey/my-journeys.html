@@ -1,0 +1,64 @@
+{% extends "base.html" %}
+{% block title %}My Journeys{% endblock %}
+{% block content %}
+
+
+<div class="container mt-4">
+    <div class="d-flex justify-content-between align-items-center mt-4">
+        <div class="d-flex align-items-center">
+            <h2 class="me-2">My Journeys</h2>
+            <span> - Explore your travel history</span>
+        </div>
+        <!-- a button that directs to add new journey page-->
+        <a class="btn btn-primary" href="{{ url_for('new_journey') }}">Add a New Journey</a>
+    </div>
+    <div class="row row-cols-1 row-cols-sm-2 row-cols-md-3 row-cols-lg-4 g-4 pt-3">
+        {% for journey in journeys %}
+        <div class="col">
+            <div class="card h-100 d-flex flex-column">
+                <h4 class="card-title card-header">
+                    <a href="/journeys/{{ journey.journey_id }}">
+                        {{ journey.title }}
+                    </a>
+                </h4>
+                <div class="card-body flex-grow-1">
+                    <p class="text-muted"><i class="bi bi-calendar-check"></i> <small>{{ journey.start_date.strftime('%d/%m/%Y') }}</small></p>
+                    <p class="card-text">{{ journey.description }}</p>
+                </div>
+                <div class="d-flex justify-content-between p-3">
+                    <span class="badge bg-{{status_badges_mapping[journey.status]}}">{{journey.status.capitalize()}}</span>
+                    {% if journey.is_hidden %}
+                    <span class="badge bg-warning text-dark">Hidden</span>
+                    {% endif %}
+                </div>
+                {% if journey.photo %}
+                <img src="{{ url_for('static', filename='uploads/' + journey.photo) }}" class="card-img-bottom" alt="journey cover image" />
+                {% endif %}
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    <nav class="mt-4">
+        <ul class="pagination justify-content-center">
+            {% if current_page > 1 %}
+            <li class="page-item">
+                <a class="page-link" href="?current_page={{ current_page - 1 }}" aria-label="Previous">
+                    <span aria-hidden="true">&laquo;</span>
+                </a>
+            </li>
+            {% endif %}
+            {% for page in range(1, total_pages + 1) %}
+            <li class="page-item {% if page == current_page %}active{% endif %}">
+                <a class="page-link" href="?current_page={{ page }}">{{ page }}</a>
+            </li>
+            {% endfor %}
+            {% if current_page < total_pages %} <li class="page-item">
+                <a class="page-link" href="?current_page={{ current_page + 1 }}" aria-label="Next">
+                    <span aria-hidden="true">&raquo;</span>
+                </a>
+                </li>
+                {% endif %}
+        </ul>
+    </nav>
+</div>
+{% endblock %}

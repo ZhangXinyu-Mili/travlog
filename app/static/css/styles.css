@@ -1,0 +1,154 @@
+/* Font imports */
+@font-face {
+    font-family: "Myriad Pro Regular";
+    src: url("../fonts/MyriadPro-Regular.woff") format("woff");
+    font-weight: normal;
+    font-style: normal;
+}
+
+@font-face {
+    font-family: "Myriad Pro Bold";
+    src: url("../fonts/MyriadPro-Bold.woff") format("woff");
+    font-weight: bold;
+    font-style: normal;
+}
+
+@font-face {
+    font-family: "Myriad Pro Italic";
+    src: url("../fonts/MyriadPro-It.woff") format("woff");
+    font-weight: normal;
+    font-style: italic;
+}
+
+/* General page styles */
+body {
+    background-color: #f5f4f2;
+    font-family: "Myriad Pro Regular", sans-serif;
+    color: #344ead;
+}
+
+/* Title and navbar styles */
+h1, h2, h3, .navbar {
+    font-family: "Myriad Pro Bold", sans-serif;
+    color: #344ead;
+}
+
+.logo-text {
+    font-size: 3em;
+    font-family: "Myriad Pro Bold", sans-serif;
+    color: #344ead;
+}
+
+/* Regular paragraph styles */
+
+/* Secondary text styles */
+body .text-muted, footer {
+    font-family: "Myriad Pro Regular", sans-serif;
+    color: #60a3fa !important; /* Use !important to override Bootstrap styles */
+}
+
+.table.bg-tuo {
+   --bs-table-bg: #f5f4f2;
+}
+
+/* Journey card styles */
+.card-title a {
+    color: #344ead;
+    text-decoration: none;
+}
+.card-title {
+    color: #344ead;
+    text-decoration: none;
+}
+
+.card-text {
+    color: #344ead;
+}
+
+.small-text {
+    font-size: 0.8em;
+}
+
+/* Menu styles */
+.navbar .nav-link {
+    color: #344ead !important;
+    font-size: x-large;
+}
+
+.navbar .nav-link.link-secondary {
+    color: #091f5b !important;
+    text-decoration: underline;
+}
+
+.bg-dark-blue {
+    background-color: #091f5b;
+}
+
+.text-white {
+    color: #ffffff !important;
+}
+
+.text-blue {
+    color: #344ead !important;
+}
+.text-dark-blue {
+    color: #091f5b !important;
+}
+.table.text-blue th{
+    color: #344ead !important;
+}
+.table.text-blue td{
+    color: #344ead !important;
+}
+
+footer {
+    position: relative;
+    bottom: 0;
+    width: 100%;
+}
+
+
+
+.btn-primary {
+    --bs-btn-color:#ffffff;
+    --bs-btn-bg: #344ead;
+    --bs-btn-hover-bg: #091f5b;
+    --bs-btn-border-color: #344ead;
+    --bs-btn-hover-border-color: #091f5b;
+}
+
+.pagination>li.active>a
+{
+    background-color: #344ead;
+    color: #ffffff;
+    border:#344ead;
+}
+
+.btn-yellow {
+    --bs-btn-color:#091f5b;
+    --bs-btn-bg: #FEBB22;
+    --bs-btn-hover-bg: #FEBB22;
+    --bs-btn-border-color: #FEBB22;
+    --bs-btn-hover-border-color: #FEBB22;
+    --bs-btn-border-radius: 50px;
+    padding: 10px 35px;
+}
+
+.nav-tabs {
+    color: #344ead !important;
+    --nav-link-color: #344ead;
+    font-size: large;
+}
+
+.nav-tabs .nav-link {
+    color: #344ead !important;
+    font-size: large;
+    font-family: "Myriad Pro Bold", sans-serif;
+    border: none;
+    background-color: transparent;
+}
+
+.nav-tabs .nav-link.active {
+    color: #091f5b !important;
+    border-bottom: 3px solid #091f5b; /* mimic active underline if wanted */
+}

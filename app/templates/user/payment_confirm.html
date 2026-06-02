@@ -1,0 +1,42 @@
+{% extends "base.html" %}
+{% block title %}confirm payment{% endblock %}
+{% block content %}
+
+<div class="container mt-4">
+  {% if 'role' in session and session['role'] != 'traveller' %}
+  <div class="row justify-content-center text-center">
+      <div class="col-lg-7">
+        <h2>Error</h2>
+        <p class="lead text-danger">Staffs cannot purchase subscriptions.</p>
+        <a href="{{ url_for('root') }}" class="btn btn-primary">Go to Home</a>
+      </div>
+    </div>
+  {% else %}
+    <div class="align-items-center"> 
+        <h2 class="me-2">Confirm Order Details</h2>
+        <h4>
+        {% if subscription.subscription_type_id == 1 %}
+          One Month Plan
+        {% elif subscription.subscription_type_id == 2 %}
+          One Quarter Plan
+        {% elif subscription.subscription_type_id == 3 %}
+          One Year Plan
+        {% endif %}
+        </h4>
+        <p>Duration: {{subscription.duration}} days</p>
+        <p>Subscription Start: {{ start_date }}</p>
+        <p>Subscription End: {{ end_date }}</p>
+        <p>Billing Address: {{ billing_address }}</p>
+        <p>Base Price: ${{ subscription.price }}</p>
+        <p>GST (15% if NZ): ${{ gst }}</p>
+        <p>Total Price: ${{ total_price }}</p>
+    </div>
+    <form method="POST">
+      <input type="hidden" name="card_number" value="{{ request.args.get('card_number') }}">
+      <input type="hidden" name="billing_address" value="{{ billing_address }}">
+      <button type="submit" class="btn btn-primary">Confirm & Pay</button>
+      <a href="{{ url_for('pay_subscription', subscription_type_id=subscription.subscription_type_id) }}" class="btn btn-primary">Cancel</a>
+  </form>
+{% endif %}
+    </div>
+{% endblock %}

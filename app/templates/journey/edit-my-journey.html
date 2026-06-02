@@ -1,0 +1,49 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="d-flex align-items-center">
+        <h2 class="me-2">Edit Journey</h2>
+    </div>
+
+    <form method="post">
+        <div class="row row-cols-1 pt-3 g-4">
+            <div class="col">
+                <label for="title" class="form-label">Title</label>
+                <input type="text" id="title" name="title"
+                    class="form-control {% if title_error %} is-invalid{% endif %}" value="{{ title }}"
+                    required>
+                <div class="invalid-feedback">{{ title_error }}</div>
+            </div>
+            <div class="col">
+                <label for="description" class="form-label">Description</label>
+                <textarea id="description" name="description"
+                    class="form-control {% if description_error %} is-invalid{% endif %}" rows="5"
+                    required>{{ description }}</textarea>
+                <div class="invalid-feedback">{{ description_error }}</div>
+            </div>
+
+            <div class="col">
+                <label for="startDate" class="form-label">Start Date</label>
+                <input type="date" class="form-control{% if startDate_error %} is-invalid{% endif %}" id="startDate" name="startDate" value="{{ request.form['startDate'] if request.method == 'POST' else startDate }}" required>
+                <div class="invalid-feedback">{{ startDate_error }}</div>
+            </div>
+
+            <div class="col">
+                <label for="status" class="form-label">Journey Publicity</label>
+                <select title="status" class="form-select form-control{% if publicity_error %} is-invalid{% endif %}" name="status">
+                    <option value="private" {{"selected" if status == "private"}}>Private</option>
+                    <option value="public" {{"selected" if status == "public"}}>Public</option>
+                    <option value="published" {{"selected" if status == "published"}}>Published (Premium only)</option>
+                </select>
+                <div class="invalid-feedback">{{ publicity_error }}</div>
+            </div>
+
+            <div class="col text-end">
+                <button type="submit" class="btn btn-primary">Submit</button>
+                <a href="{{ url_for('journey', journey_id=journey_id) }}" class="btn btn-primary">Cancel</a>
+            </div>
+        </div>
+    </form>
+</div>
+{% endblock %}

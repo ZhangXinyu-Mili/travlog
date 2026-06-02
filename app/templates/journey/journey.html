@@ -1,0 +1,409 @@
+{% extends "base.html" %}
+{% block title %}Journey and events{% endblock %}
+{% block content %}
+<div class="container mt-4">
+    <!-- Journey Details -->
+    <h2>Journey</h2>
+
+    <div class="pt-3">
+        <div class="card h-100">
+            <div class="card-header card-title">
+                <div class="d-flex justify-content-between align-items-center">
+                    <h4>{{ journey.title }}</h4>
+                    <div>
+                        {% if g.user and journey.user_id != g.user.user_id %}
+                            {% if followed %}
+                            <button disabled class="btn btn-secondary btn-sm">Followed</button>
+                            {% else %}
+                            <button data-follow-btn="{{url_for('follow_journey', journey_id=journey.journey_id)}}" class="btn btn-primary btn-sm">Follow</button>
+                            {% endif %}
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+            <div class="card-body">
+                <div class="row g-3 align-items-start">
+                    {% if journey.photo %}
+                    <!-- Image on the left -->
+                    <div class="col-md-4">
+                        <img src="{{ url_for('static', filename='uploads/' + journey.photo) }}"
+                             class="img-fluid rounded"
+                             style="object-fit: cover; width: 100%; max-height: 250px;"
+                             alt="{{ journey.title }}">
+                    </div>
+                    {% endif %}
+
+                    <!-- Info on the right -->
+                    <div class="col-md-8 card-text">
+                        <p class="text-muted"><i class="bi bi-calendar-check"></i> <small>{{ journey.start_date }}</small></p>
+                        <div class="d-flex align-items-center mb-3">
+                            <div class="text-muted">
+                                <i class="bi bi-person"></i> <a class="text-muted link-underline link-underline-opacity-0" href="{{url_for('view_profile', user_id=journey.user_id)}}"><small>{{ journey.username }}</small></a>
+                                {% if 'role' in session and session['role'] != 'traveller' %}
+                                    {% if author.status != 'banned' %}
+                                        <span class="badge {{ 'bg-success' if author.status == 'active' else 'bg-warning' }}">
+                                            {{ "Active" if author.status == "active" else "Blocked" }}
+                                        </span>
+                                    {% else %}
+                                        <span class="badge bg-danger">Banned</span>
+                                    {% endif %}
+                                {% endif %}
+                            </div>
+
+                            {{ user_level(journey.user_id) }}
+
+                            {% if not is_my_journey and session['user_id'] %}
+                                {% if user_or_location_followed(g.user.user_id, journey.user_id, "user") %}
+                                    <button class="btn btn-secondary btn-sm ms-2" disabled>Followed</button>
+                                {% else %}
+                                    <button data-follow-btn="{{url_for('follow_user', user_id=journey.user_id)}}" class="btn btn-primary btn-sm ms-2">Follow</button>
+                                {% endif %}
+                            {% endif %}
+                        </div>
+                        <p>{{ journey.description }}</p>
+                        <p>
+                            <span class="badge bg-{{status_badges_mapping[journey.status]}}">
+                              {{journey.status.capitalize()}}
+                            </span>
+                        </p>
+                    </div>
+                </div>
+            </div>
+
+            {% if is_my_journey or can_edit %}
+            <div class="card-footer d-flex justify-content-between">
+                <div>
+                    {% if is_my_journey %}
+                    <a href="{{ url_for('edit_my_journey', journey_id=journey.journey_id)}}" class="btn
+                    btn-primary">Edit</a>
+                    <button class="btn btn-danger" type="button" data-bs-toggle="modal"
+                        data-bs-target="#deleteJourneyModal">Delete</button>
+                    {% if g.premium %}
+                    <button class="btn btn-primary" journey_id="{{journey.journey_id}}"
+                        onclick="showModal(this)">Add Photo</button>
+                    {% else %}
+                    <p class="text-primary" style="padding-top: 10px;">
+                        Make your journeys unforgettable — <strong><a href="/subscriptions">subscribe now</a></strong> to add rich, beautiful photo to your travel stories!
+                    </p>
+                    {% endif %}
+                    {% endif %}
+                </div>
+
+                <div>
+                    {% if can_edit %}
+                    <a href="{{ url_for('update_public_journey_title_and_description', journey_id=journey.journey_id)}}"
+                        class="btn
+                    btn-primary">Moderate</a>
+                    <button class="btn btn-primary" type="button"
+                        data-bs-toggle="modal" data-bs-target="#setVisibilityModal">Set as {{ "Visible" if journey.is_hidden else
+                        "Hidden" }}</button>
+                        {% if not is_my_journey %}
+                            {% if author.status != 'banned' %}
+                            <button class="btn btn-primary" type="button"
+                                data-bs-toggle="modal" data-bs-target="#blockModal">{{ "Block User" if author.status == "active" else
+                                "Active User" }}</button>
+                            {% endif %}
+                        {% endif %}
+                    {% endif %}
+                </div>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Events Section -->
+    <div class="d-flex justify-content-between align-items-center mt-4">
+        <h2>Events</h2>
+        {% if is_my_journey %}
+        <a href="{{ url_for('new_event_form', journey_id=journey.journey_id) }}" class="btn btn-primary">Add Event</a>
+        {% endif %}
+    </div>
+    <div class="row mt-3">
+        {% if events %}
+        {% for event in events %}
+        <div class="col-md-4">
+            <div class="card shadow-lg mb-4 card-text">
+                <div class="card-header">
+                    <h5 class="mb-0">{{ event.title }}</h5>
+                </div>
+
+                <div class="card-body">
+                    <p class="card-text">{{ event.description }}</p>
+
+                    {% if event.location %}
+                        <div class="mb-2 d-flex justify-content-between align-items-center">
+                            <div class="d-flex justify-content-start">
+                                <i class="bi bi-geo-alt"></i>
+                                {{ event.location }}
+                            </div>
+                            {% if user_or_location_followed(session['user_id'], event.location_id, 'location') %}
+                            <button disabled class="px-2 btn btn-secondary btn-sm">Followed</button>
+                            {% elif g.user and journey.user_id != g.user.user_id %}
+                            <button data-follow-btn="{{url_for('follow_location', location_id=event.location_id)}}" class="btn btn-primary btn-sm">Follow</button>
+                            {% endif %}
+
+                        </div>
+                    {% endif %}
+
+
+                    <p>
+                        <i class="bi bi-calendar-check"></i> <strong>Start:</strong> {{ event.start_at }} <br>
+                        <i class="bi bi-calendar-x"></i> <strong>End:</strong> {{ event.end_at }}
+                    </p>
+
+                    <!-- Event Images -->
+                    {% if event.photos %}
+                    {% if event.photos|length == 1 %}
+                        <!-- Display single image full-width -->
+                        <div class="row">
+                            <div class="col">
+                                <img src="{{ url_for('static', filename='uploads/' + event.photos[0].photo_path) }}"
+                                     class="img-thumbnail img-clickable"
+                                     style="height: 200px; width: 100%; object-fit: cover; cursor: pointer;"
+                                     alt="{{ event.title }}"
+                                     onclick="showImageModal(
+                                        this.src,
+                                        '{{ event.title }}',
+                                        '{{ event.photos[0].photo_id }}',
+                                        '{{ journey.journey_id }}')"
+                                        >
+                            </div>
+                        </div>
+                    {% else %}
+                        <!-- Display images in a grid -->
+                        <div class="row row-cols-1 row-cols-md-2 g-3">
+                            {% for photo in event.photos %}
+                            <div class="col">
+                                <img src="{{ url_for('static', filename='uploads/' + photo.photo_path) }}"
+                                     class="img-thumbnail img-clickable"
+                                     style="height: 200px; width: 100%; object-fit: cover; cursor: pointer;"
+                                     alt="{{ event.title }}"
+                                     onclick="showImageModal(this.src, '{{ event.title }}', '{{ photo.photo_id }}', '{{ journey.journey_id }}')">
+                            </div>
+                            {% endfor %}
+                        </div>
+                    {% endif %}
+
+                    <!-- Modal for Enlarged Image -->
+                    <div class="modal fade" id="imagePreviewModal" tabindex="-1" aria-labelledby="imagePreviewModalLabel" aria-hidden="true">
+                        <div class="modal-dialog modal-dialog-centered modal-lg">
+                            <div class="modal-content">
+                                <div class="modal-header">
+                                    <h5 class="modal-title" id="imagePreviewModalLabel">Image Preview</h5>
+                                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                </div>
+                                <div class="modal-body text-center">
+                                    <img id="modalImage" src="" class="img-fluid" alt="Preview">
+                                </div>
+                                <div class="modal-footer">
+                                    {% if is_my_journey %}
+                                    <a id="deletePhotoLink" href="#" class="btn btn-primary">Delete</a>
+                                    {% else %}
+                                    <a id="deletePhotoLink" href="#"></a>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    {% endif %}
+                </div>
+
+                {% if 'user_id' in session %}
+                <div class="card-footer d-flex justify-content-between align-items-center mt-2">
+                    <!-- User can like or unlike the event, aligned to flex-start -->
+                    <div class="d-flex">
+                        <a class="btn d-flex align-items-center {% if event.is_liked %}bg-primary text-white{% else %}btn-outline-primary{% endif %}"
+                           href="{{ url_for('like_event', journey_id=journey.journey_id, event_id=event.event_id) }}">
+                            <i class="bi bi-hand-thumbs-up-fill"></i>
+                            <span class="ms-1" id="like-count">{{ event.like_count }}</span>
+                        </a>
+                    </div>
+
+                    <!-- Comments Link aligned to flex-end -->
+                    <div class="d-flex">
+                        <a href="{{ url_for('show_event', event_id=event.event_id) }}" class="btn btn-link">
+                            View Comments ({{ event.comments_count }})
+                        </a>
+                    </div>
+                </div>
+                {% endif %}
+
+                {% if is_my_journey or can_edit %}
+                <!-- User can update, Moderate or add photo for event -->
+                <div class="card-footer text-left">
+                    {% if is_my_journey %}
+                    <a href="{{url_for("edit_event_form", event_id=event.event_id, journey_id=journey.journey_id)}}" class="btn btn-primary">Edit</a>
+                    {% if g.premium or event.photos|length == 0 %}
+                    <a href="{{url_for("add_event_photos", event_id=event.event_id, journey_id=journey.journey_id)}}" class="btn btn-primary">Add Photos</a>
+                    {% endif %}
+                    <button class="btn btn-danger" event_id="{{event.event_id}}" journey_id="{{journey.journey_id}}" onclick="deleteEventModal(this)">Delete Event</button>
+                    {% endif %}
+
+                    {% if can_edit %}
+                    <a href="{{ url_for('edit_public_event', journey_id=journey.journey_id, event_id=event.event_id)}}"
+                        class="btn
+                        btn-primary">Moderate</a>
+                    {% endif %}
+                </div>
+                {% endif %}
+
+            </div>
+        </div>
+        {% endfor %}
+        {% else %}
+        <p>No events have been added to the journey.</p>
+        {% endif %}
+    </div>
+</div>
+</div>
+
+<div id="setVisibilityModal" class="modal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Set as {{ "Visible" if journey.is_hidden else "Hidden" }}</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <p>Do you want to set this journey as {{ "visible" if journey.is_hidden else "hidden" }}?</p>
+            </div>
+            <div class="modal-footer">
+                <form action="{{ url_for('update_visibility', journey_id=journey['journey_id']) }}" method="post">
+                    <input type="hidden" name="visibility" value="{{ 'visible' if journey.is_hidden else 'hidden' }}" />
+                    <button type="submit" class="btn btn-primary">Confirm</button>
+                </form>
+                <button type="button" class="btn btn-primary" data-bs-dismiss="modal">Cancel</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div id="deleteJourneyModal" class="modal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Delete Journey</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <p>Do you want to delete this journey: <strong>{{journey.title}}</strong>?</p>
+                <p>This will also delete all events associated with this journey.</p>
+            </div>
+            <div class="modal-footer">
+                <form action="{{ url_for('delete_journey', journey_id=journey['journey_id']) }}" method="post">
+                    <button type="submit" class="btn btn-primary">Confirm</button>
+                </form>
+                <button type="button" class="btn btn-primary" data-bs-dismiss="modal">Cancel</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div id="blockModal" class="modal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">{{ "Block User" if author.status == 'active' else "Active User" }}</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <p>Do you want to {{ "block this user" if author.status == 'active' else "active this user" }} ?</p>
+            </div>
+            <div class="modal-footer">
+                <form action="{{ url_for('block_user', journey_id=journey['journey_id']) }}" method="post">
+                    <input type="hidden" name="status" value="{{ 'blocked' if author.status == 'active' else 'active' }}" />
+                    <button type="submit" class="btn btn-primary">Confirm</button>
+                </form>
+                <button type="button" class="btn btn-primary" data-bs-dismiss="modal">Cancel</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<div id="addPhotoModal" class="modal"></div>
+<div id="deleteEventModal" class="modal"></div>
+
+<script>
+    async function showModal(element) {
+        const journey_id = element.getAttribute("journey_id");
+        try {
+            const response = await fetch(`/journey/${journey_id}/photos/add`, {
+                method: "GET",
+            });
+            if (!response.ok) {
+                throw new Error(`Response status: ${response.status}`);
+            }
+
+            const html = await response.text();
+
+            const addPhotoModal = document.getElementById('addPhotoModal');
+            addPhotoModal.innerHTML = html;
+            const myModal = new bootstrap.Modal(addPhotoModal, {
+                keyboard: false
+            });
+            myModal.show();
+        } catch (error) {
+            console.error(error.message);
+        }
+    }
+
+    async function removePhoto (element){
+        const journey_id = element.getAttribute("journey_id");
+        try {
+            const response = await fetch(`/journey/${journey_id}/photos/remove`,{
+                method: "POST",
+                body: new URLSearchParams({ journey_id: journey_id })
+            });
+            if (!response.ok) {
+                throw new Error(`Response status: ${response.status}`);
+            }
+
+            const status = await response.text();
+            window.location = `/journeys/${journey_id}`;
+
+        } catch (error) {
+            console.error(error.message);
+        }
+    }
+
+    async function deleteEventModal (element){
+        const event_id = element.getAttribute("event_id");
+        const journey_id = element.getAttribute("journey_id");
+        try {
+            const response = await fetch(`/events/${event_id}/delete?journey_id=${journey_id}`,{
+                method: "GET",
+            });
+            if (!response.ok) {
+                throw new Error(`Response status: ${response.status}`);
+
+            }
+
+            const html = await response.text();
+
+            const deleteEventModal = document.getElementById('deleteEventModal');
+            deleteEventModal.innerHTML=html;
+            const myModal = new bootstrap.Modal(deleteEventModal, {
+                keyboard: false
+            });
+            myModal.show();
+        } catch (error) {
+            console.error(error.message);
+        }
+    }
+
+    function showImageModal(src, title, photoId, journeyId) {
+        const modalImage = document.getElementById('modalImage');
+        const modalTitle = document.getElementById('imagePreviewModalLabel');
+        const deleteLink = document.getElementById('deletePhotoLink');
+
+        modalImage.src = src;
+        modalTitle.textContent = title;
+        deleteLink.href = `/journeys/${journeyId}/delete_event_photos/${photoId}`;  // update link with photoId
+
+        const imageModal = new bootstrap.Modal(document.getElementById('imagePreviewModal'));
+        imageModal.show();
+    }
+</script>
+
+{% endblock %}

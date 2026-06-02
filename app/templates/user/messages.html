@@ -1,0 +1,287 @@
+{% extends 'base.html' %}
+
+{% block title %}Messages{% endblock %}
+
+{% block content %}
+<div class="h-100 row align-items-center justify-content-center carousel slide">
+  <div class="col-12 col-lg-8">
+    <div class="justify-content-center navbar">
+        <ul class="nav nav-underline">
+        {% if from_id %}
+        <li>
+        <a role="button" href="{{url_for("my_message_list")}}" class="d-flex p-3 m-0 h4 nav-link">Send Message</a>
+        {% else %}
+        <a role="button" class="d-flex p-3 m-0 h4 nav-link" onclick="message.set_slide1({status_watch:message.status()},['slide1'])">My Messages</a>
+        </li>
+        {% endif %}
+        </ul>
+    </div>
+    <div id="slide1" class="container carousel-item {{'active' if active == 'slide1'}}">
+
+        <div class="row row-cols-1 justify-content-center">
+        <div class="col-12 col-lg-8">
+            {% if summaries %}
+            <ul class="list-group">
+                {% for i in range(0, total_count) %}
+                    <li class="list-group-item list-group-item-action" aria-current="true">
+                    <div class="d-flex justify-content-between">
+                    <h5 class="mb-1 w-50"><span class="badge text-bg-{{role_badges_mapping[summaries[i].role]}}">{{summaries[i].role}}</span>  {{summaries[i].username}}</h5>
+                    {% set new_messages_count = json.loads(summaries[i].new_messages_f).f %}
+                    <h5 class="mb-1">{% if new_messages_count %} {{new_messages_count}} {% endif %}</h5>
+                    <div class="d-flex justify-content-end w-50">
+                        <button type="button" class="btn btn-primary w-50" data-bs-toggle="tab" onclick="message.set_slide2({message_id:{{summaries[i].from_id}}, from:{{summaries[i].from_id}}, to:{{summaries[i].to_id}}, status:{{1 if new_messages_count else 0}}},['slide2'])">{{"View ..." if new_messages_count else "View"}}</button>
+                    </div>
+                </li>
+                {% endfor %}
+
+                </ul>               
+            <nav class="mt-4">
+            <ul class="pagination justify-content-center">
+                {% if current_page > 1 %}
+                <li class="page-item">
+                    <a class="page-link" href="?current_page={{ current_page - 1 }}" aria-label="Previous">
+                        <span aria-hidden="true">&laquo;</span>
+                    </a>
+                </li>
+                {% endif %}
+                {% for page in range(1, total_pages + 1) %}
+                <li class="page-item {% if page == current_page %}active{% endif %}">
+                    <a class="page-link" href="?current_page={{ page }}">{{ page }}</a>
+                </li>
+                {% endfor %}
+                {% if current_page < total_pages %}
+                <li class="page-item">
+                    <a class="page-link" href="?current_page={{ current_page + 1 }}" aria-label="Next">
+                        <span aria-hidden="true">&raquo;</span>
+                    </a>
+                </li>
+                {% endif %}
+            </ul>
+            </nav>
+            {% else %}
+            <p class="text-center">No Messages.</p>
+            {% endif %}
+        </div>
+        </div>
+    </div>
+    <div id="slide2" class="container carousel-item {{'active' if active == 'slide2'}}">
+
+        <div class="row row-cols-1 justify-content-center">
+        <div class="col-12 col-lg-8">
+            {% if summaries %}
+            <ul class="list-group" id="list-content">
+                {% for i in range(0, total_count) %}
+                <li id="{{summaries[i].from_id}}" user_id="{{session['user_id']}}" from_name="{{summaries[i].username}}" class="list-group-item list-group-item-action d-none" aria-current="true">
+                    <p class="mb-1 {{'text-start'}}">Chat with <span class="badge text-bg-primary">{{ summaries[i].username }}.</span></p>
+                        {% for id_dict in summaries[i].directions %}
+                            {% for d, id in id_dict.items() %}
+                    
+                                <div class="col-12 me-auto mb-3">
+                                    <div class="card">
+                                        <div class="card-body">
+                                            <div class="row {{'justify-content-start text-start' if d == 'f' else 'justify-content-end text-end'}}">
+                                                <div class="col {{'pe-5' if d == 'f' else 'ps-5'}}">
+                                                    <p class="card-text">{{messages[id].content}}</p>
+                                                    <p class="text-muted {{'text-start' if d == 'f' else 'text-end'}}">{{messages[id].created_at}} by {{messages[id].username}} {{messages[id].role}}</p>
+                                                    <div class="d-flex w-100 {{'justify-content-start' if d == 'f' else 'justify-content-end'}}">
+                                                    <button class="btn btn-danger" message_id="{{id}}" from_id="{{summaries[i].from_id}}" from_name="{{summaries[i].username}}" onclick="deleteMessageModal(this)">Delete</button>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            {% endfor %}
+                        {% endfor %}
+                </li>
+
+                {% endfor %}
+                </ul>              
+            {% else %}
+            <p class="text-center">No Messages.</p>
+            {% endif %}
+        </div>
+        </div>
+    </div>
+    <div id="slide3" class="container carousel-item {{'active' if active == 'slide3'}}">
+
+        <div class="row row-cols-1 justify-content-center">
+        <div class="col-12 col-lg-8">
+            {% if messages or from_id %}
+            <ul class="list-group" id="list-content2">
+                {% if total_count >0 %}
+                {% for i in range(0, total_count) %}
+                <li id="{{summaries[i].from_id}}" user_id="{{session['user_id']}}" from_name="{{summaries[i].username}}" class="list-group-item list-group-item-action {{'d-none' if not from_id}}" aria-current="true">
+                    <p class="mb-1 {{'text-start'}}">Chat with <span class="badge text-bg-primary">{{ summaries[i].username }}.</span></p>
+
+                        {% for id_dict in summaries[i].directions %}
+                            {% for d, id in id_dict.items() %}
+
+                                <div class="col-12 me-auto mb-3">
+                                    <div class="card">
+                                        <div class="card-body">
+                                            <div class="row {{'justify-content-start text-start' if d == 'f' else 'justify-content-end text-end'}}">
+                                                <div class="col {{'pe-5' if d == 'f' else 'ps-5'}}">
+                                                    <p class="card-text">{{messages[id].content}}</p>
+                                                    <p class="text-muted {{'text-start' if d == 'f' else 'text-end'}}">{{messages[id].created_at}} by {{messages[id].username}} {{messages[id].role}}</p>
+                                                    <div class="d-flex w-100 {{'justify-content-start' if d == 'f' else 'justify-content-end'}}">
+                                                    <button class="btn btn-danger" message_id="{{id}}" from_id="{{summaries[i].from_id}}" from_name="{{summaries[i].username}}" onclick="deleteMessageModal(this)">Delete</button>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            {% endfor %}
+                        {% endfor %}
+                </li>
+
+                {% endfor %}
+                {% else %}
+                <li id="{{from_id}}" user_id="{{session['user_id']}}" class="list-group-item list-group-item-action" aria-current="true">
+                    <p class="mb-1 {{'text-start'}}">Send the first message to <span class="badge text-bg-primary">{{ from_name }}.</span></p>
+                    <hr>
+                </li>
+                {%endif%}
+                </ul>
+
+                <form id="message" action="{{url_for('send_message')}}" method="post" class="needs-validation {{'d-none' if active != 'slide3'}}" novalidate>
+                        <input id="from" type="hidden" name="from_id" class="form-control" value="">
+                        <input id="to" type="hidden" name="to_id" class="form-control" value="">
+                        <input id="from_name" type="hidden" name="from_name" class="form-control" value="">
+                    {% if g.premium %}
+                        <label for="message-text" class="col-form-label">Message:</label>
+                        <textarea name="message-text" id="message-text" rows="4" class="form-control" maxlength=100 required></textarea>
+                        <div class="d-flex justify-content-end mt-2">
+                        <button type="submit" class="btn btn-primary">Reply</button>
+                        </div>
+                    {% else %}
+                    <p class="text-primary" style="padding-top: 10px;">
+                        Want to join the conversation? <strong><a href="/subscriptions">subscribe now</a></strong> to unlock the ability to reply to messages and connect directly with others!
+                    </p>
+                    {% endif %}
+                </form>  
+            {% else %}
+            <p class="text-center">No Messages.</p>
+            {% endif %}
+        </div>
+        </div>
+    </div>
+  </div>
+</div>
+<div id="deleteMessageModal" class="modal"></div>
+<script>
+
+    const message = (function () {
+        const ul = document.getElementById('list-content2');
+            for (const li of ul.children) {
+                if (!li.classList.contains("d-none")){
+                const form = document.getElementById("message");
+                const from_input = document.getElementById("to");
+                const to_input = document.getElementById("from");
+                const from_name_input = document.getElementById("from_name");
+                from_input.value = li.id;
+                to_input.value = li.getAttribute('user_id');
+                from_name_input.value = li.getAttribute('from_name');
+                form.classList.remove("d-none");
+                li.appendChild(form);
+                }
+            }
+
+        let message_status = 1;
+        async function show_slide(id) {
+            const elements = document.getElementsByClassName("carousel-item");
+            const element2 = document.getElementById(id);
+            const form = document.getElementById("message");
+            form.classList.remove("was-validated");
+            for (const element of elements) {
+                element.classList.remove("active");
+            }
+            element2.classList.add("active");
+
+            const ul = document.getElementById('list-content');
+            for (const li of ul.children) {
+                li.classList.add("d-none");
+                if (li.tagName == "form"){
+                li.lastElementChild.remove();
+                }
+            }
+
+            if (this.status_watch ==0){
+                window.location = "{{url_for('my_message_list')}}?current_page={{current_page}}";
+            }
+
+            if (this.message_id != undefined){
+                const element3 = document.getElementById(this.message_id);
+                form.classList.remove("d-none");
+                element3.classList.remove("d-none");
+                element3.appendChild(form);
+                const from_input = document.getElementById("to");
+                const to_input = document.getElementById("from");
+                const from_name_input = document.getElementById("from_name");
+                from_input.value = this.from;
+                to_input.value = this.to;
+                from_name_input.value = this.from_name;
+                if(this.status == 1){
+                    try {
+                        const response = await fetch("{{url_for('change_message_status')}}",{
+                            method: "POST",
+                            body: new URLSearchParams({ from_id: this.message_id })
+                        });
+                        if (!response.ok) {
+                            throw new Error(`Response status: ${response.status}`);
+                        }
+                        message_status=0;
+                        
+                    } catch (error) {
+                        console.error(error.message);
+                    }
+                    
+                }
+            }
+
+            }
+
+        return {
+            set_slide1(a) {
+                show_slide.apply(a, ["slide1"]);
+        },
+            set_slide2(a) {
+                show_slide.apply(a, ["slide2"]);
+        },
+        status() {
+            return message_status;
+        },
+        };
+    })();
+
+async function deleteMessageModal (element){
+
+        const message_id = element.getAttribute("message_id");
+        const from_id = element.getAttribute("from_id");
+        const from_name = element.getAttribute("from_name");
+        try {
+            const response = await fetch(`/messages/${message_id}/delete?from_id=${from_id}&from_name=${from_name}`,{
+                method: "GET",
+            });
+            if (!response.ok) {
+                //throw new Error(`Response status: ${response.status}`);
+                window.location = `/my_messages?from_id=${from_id}&from_name=${from_name}`;
+
+            }
+
+            const html = await response.text();
+
+            const deleteMessageModal = document.getElementById('deleteMessageModal');
+            deleteMessageModal.innerHTML=html;
+            const myModal = new bootstrap.Modal(deleteMessageModal, {
+                keyboard: false
+            });
+            myModal.show();
+        } catch (error) {
+            console.error(error.message);
+        }
+}
+</script>
+
+{% endblock %}
