@@ -1,4 +1,4 @@
-# COMP639_Project_2_TUO
+# travlog
 This app is developed based on online travel journal
 app 'travlog', an app designed to capture, organize, and
 relive travel memories. More features have been released in this version including earning achievements, community features, departure board, helpdesk and access premium features via subscription.
